@@ -10,6 +10,7 @@ import java.lang.Process;
 public class Main {
 
     public static void main(String[] args) throws InterruptedException {
+
         SignalHandler signalHandler = new SignalHandler() {
             @Override
             public void handle(Signal sig) {
@@ -20,11 +21,16 @@ public class Main {
 
         DiagnosticSignalHandler.install("TERM", signalHandler);
         DiagnosticSignalHandler.install("INT", signalHandler);
-        DiagnosticSignalHandler.install("ABRT", signalHandler);
+        DiagnosticSignalHandler.install("USR1", signalHandler);
 
         System.out.println("Started");
         int i = 0;
         while (true) {
+            ++ i;
+            if( i == 4 ) {
+                Signal.raise(new Signal("INT"));
+            }
+            Thread.sleep(1000);
         }
     }
 }
