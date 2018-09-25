@@ -9,18 +9,12 @@ public class DiagnosticSignalHandler implements SignalHandler {
     public static void install(String signalName, SignalHandler handler) {
         Signal signal = new Signal(signalName);
         DiagnosticSignalHandler diagnosticSignalHandler = new DiagnosticSignalHandler();
-        SignalHandler oldHandler = Signal.handle(signal, diagnosticSignalHandler);
+        Signal.handle(signal, diagnosticSignalHandler);
         diagnosticSignalHandler.setHandler(handler);
-        diagnosticSignalHandler.setOldHandler(oldHandler);
     }
-    private SignalHandler oldHandler;
     private SignalHandler handler;
 
     private DiagnosticSignalHandler() {
-    }
-
-    private void setOldHandler(SignalHandler oldHandler) {
-        this.oldHandler = oldHandler;
     }
 
     private void setHandler(SignalHandler handler) {
@@ -33,11 +27,6 @@ public class DiagnosticSignalHandler implements SignalHandler {
         System.out.println("Diagnostic Signal handler called for signal " + sig);
         try {
             handler.handle(sig);
-
-            // Chain back to previous handler, if one exists
-            if (oldHandler != SignalHandler.SIG_DFL && oldHandler != SignalHandler.SIG_IGN) {
-                oldHandler.handle(sig);
-            }
 
         } catch (Exception e) {
             System.out.println("Signal handler failed, reason " + e);
