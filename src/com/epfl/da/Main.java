@@ -6,5 +6,6 @@ public class Main {
         System.out.println("hello"+"\n"+"world");
         System.out.println("hello"+"\n"+"world");
         System.out.println(2);
+        System.out.println("Best team ever");
     }
 }
