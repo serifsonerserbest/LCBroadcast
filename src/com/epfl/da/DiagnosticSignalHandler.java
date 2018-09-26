@@ -5,7 +5,6 @@ import sun.misc.SignalHandler;
 
 public class DiagnosticSignalHandler implements SignalHandler {
 
-    // Static method to install the signal handler
     public static void install(String signalName, SignalHandler handler) {
         Signal signal = new Signal(signalName);
         DiagnosticSignalHandler diagnosticSignalHandler = new DiagnosticSignalHandler();
@@ -21,7 +20,6 @@ public class DiagnosticSignalHandler implements SignalHandler {
         this.handler = handler;
     }
 
-    // Signal handler method
     @Override
     public void handle(Signal sig) {
         System.out.println("Diagnostic Signal handler called for signal " + sig);
