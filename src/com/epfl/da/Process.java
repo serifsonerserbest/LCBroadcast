@@ -26,12 +26,16 @@ public class Process {
     {
          return sig -> {
              System.out.println("Term");
+             Logger.WriteLogToFile();
+             System.exit(-1);
          };
     }
     private SignalHandler GetIntHandler()
     {
         return sig -> {
             System.out.println("Int");
+            Logger.WriteLogToFile();
+            System.exit(-1);
         };
     }
     private SignalHandler GetUsr1Handler()
