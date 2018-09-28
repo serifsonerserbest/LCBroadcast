@@ -5,44 +5,74 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.IntBuffer;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.concurrent.Semaphore;
 
 public class Receiver {
 
 
-    HashMap<Integer, Integer> receivedMessage;
+    public class Message{
+        int messageId;
+        InetAddress address;
+        public Message(int messageId, InetAddress address) {
+            this.messageId = messageId;
+            this.address = address;
+        }
+    }
+    HashSet<Message> isReceived;
     Semaphore s;
-
+    DatagramSocket socketIn, socketOut;
     public Receiver() {
         s = new Semaphore(1);
-        receivedMessage = new HashMap<>();
+        isReceived = new HashSet<>();
     }
-    public void ReceiveMessage(int port) throws IOException, InterruptedException {
-        DatagramSocket socket = new DatagramSocket(port);
-        boolean lastMessageFlag = false;
-        boolean lastMessage = false;
-        byte[] message = new byte[1024];
-        InetAddress address;
-        while(!lastMessage) {
-            s.acquire();
-            DatagramPacket receivedPacket = new DatagramPacket(message, message.length);
-            socket.receive(receivedPacket);
-            message = receivedPacket.getData();
+    public void ReceiveMessage(int port) throws IOException {
+        socketIn = new DatagramSocket(port);
+        byte[] packetReceived = new byte[1024];
+        InetAddress addressReceived;
+        byte[] messageReceived;
+        int portReceived;
+        int ackType;
+        while(true) {
+            //receiving packet
+            DatagramPacket receivedPacket = new DatagramPacket(packetReceived, packetReceived.length);
+            socketIn.receive(receivedPacket);
+            addressReceived = receivedPacket.getAddress();
+            portReceived = receivedPacket.getPort();
+            messageReceived = receivedPacket.getData();
+            IntBuffer intBuf =
+                    ByteBuffer.wrap(messageReceived)
+                            .order(ByteOrder.BIG_ENDIAN)
+                            .asIntBuffer();
 
-            address = receivedPacket.getAddress();
-            port = receivedPacket.getPort();
-
+            int[] messageArray = new int[intBuf.remaining()];
+            intBuf.get(messageArray);
+            int messageId = messageArray[0];
+            int content = messageArray[1];
+            Message message = new Message(messageId, addressReceived);
+            socketOut = new DatagramSocket(portReceived);
+            if(isReceived.contains(message)) {
+                ackType = 0;
+            }
+            else {
+                ackType = 1;
+                System.out.println("Message #" + messageId + ": " + content + " was successfully received");
+                isReceived.add(message);
+            }
+            sendAck(socketOut, portReceived, addressReceived, ackType, messageId);
         }
 
     }
-    /*private class InThread extends Thread {
-        private DatagramSocket sk_in;
-        public void run () {
-
-        }
+    public void sendAck(DatagramSocket socket, int port, InetAddress address, int ackType, int messageId) throws IOException {
+        int[] data = {ackType, messageId};
+        ByteBuffer byteBuffer = ByteBuffer.allocate(data.length * 4);
+        IntBuffer intBuffer = byteBuffer.asIntBuffer();
+        intBuffer.put(data);
+        byte[] sentData = byteBuffer.array();
+        socket.send(new DatagramPacket(sentData, sentData.length, address, port));
     }
-    private class OutThread extends Thread {
-
-    }*/
 }
