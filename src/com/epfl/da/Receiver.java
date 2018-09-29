@@ -8,29 +8,34 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 import java.util.HashSet;
-import java.util.concurrent.Semaphore;
 
 public class Receiver {
 
 
     class Message{
         int messageId;
-        InetAddress address;
-        public Message(int messageId, InetAddress address) {
+        int port;
+        public Message(int messageId, int port) {
             this.messageId = messageId;
-            this.address = address;
+            this.port = port;
         }
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             Message message = (Message) o;
-            return address.hashCode() + messageId * 31 == message.address.hashCode() + message.messageId * 31;
+            return hashCode() == message.hashCode();
         }
-
+        public int cantorPairing() {
+            int sum = this.messageId + this.port;
+            if(sum % 2 == 0) sum = sum / 2 * (sum + 1);
+            else sum = (sum + 1) / 2 * sum;
+            int cantorValue = sum + this.port;
+            return cantorValue;
+        }
         @Override
         public int hashCode() {
-            return address.hashCode() + messageId * 31;
+            return this.cantorPairing();
         }
     }
     HashSet<Message> isReceived;
@@ -61,7 +66,7 @@ public class Receiver {
             intBuf.get(messageArray);
             int messageId = messageArray[0];
             int content = messageArray[1];
-            Message message = new Message(messageId, addressReceived);
+            Message message = new Message(messageId, portReceived);
             if(isReceived.contains(message)) {
                 ackType = 0;
                 System.out.println("Message #" + messageId + ": " + content + " duplicate");
@@ -76,7 +81,7 @@ public class Receiver {
 
     }
     public void sendAck(DatagramSocket socket, int port, InetAddress address, int ackType, int messageId) throws IOException {
-        int[] data = {/*ackType,*/ messageId};
+        int[] data = {ackType, messageId};
         ByteBuffer byteBuffer = ByteBuffer.allocate(data.length * 4);
         IntBuffer intBuffer = byteBuffer.asIntBuffer();
         intBuffer.put(data);
