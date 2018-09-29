@@ -13,13 +13,13 @@ public class Main {
 
     public static void main(String[] args) throws InterruptedException {
         Process process = new Process(1);
-       /* Receiver r = new Receiver();
+        /*Receiver r = new Receiver();
         try {
             r.ReceiveMessage(20002);
         } catch (IOException e) {
             e.printStackTrace();
         }*/
-        Sender s = new Sender();
+       /* Sender s = new Sender();
         try {
             s.SendMessage(1, InetAddress.getByName("127.0.0.1"), 20002);
             s.SendMessage(2, InetAddress.getByName("127.0.0.1"), 20002);
@@ -32,6 +32,6 @@ public class Main {
 
         } catch (UnknownHostException e) {
             e.printStackTrace();
-        }
+        }*/
     }
 }

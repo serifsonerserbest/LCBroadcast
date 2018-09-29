@@ -4,30 +4,39 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
-import java.util.*;
+import java.util.HashSet;
 import java.util.concurrent.Semaphore;
 
 public class Receiver {
 
 
-  /*  public class Message{
+    class Message{
         int messageId;
         InetAddress address;
         public Message(int messageId, InetAddress address) {
             this.messageId = messageId;
             this.address = address;
         }
-    }*/
-    HashMap<String, HashSet<Integer>> isReceived;
-    Semaphore s;
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Message message = (Message) o;
+            return address.hashCode() + messageId * 31 == message.address.hashCode() + message.messageId * 31;
+        }
+
+        @Override
+        public int hashCode() {
+            return address.hashCode() + messageId * 31;
+        }
+    }
+    HashSet<Message> isReceived;
     DatagramSocket socketIn;
     public Receiver() {
-        s = new Semaphore(1);
-        isReceived = new HashMap<>();
+        isReceived = new HashSet<>();
     }
     public void ReceiveMessage(int port) throws IOException {
         socketIn = new DatagramSocket(port);
@@ -52,19 +61,15 @@ public class Receiver {
             intBuf.get(messageArray);
             int messageId = messageArray[0];
             int content = messageArray[1];
-            //Message message = new Message(messageId, addressReceived);
-            if(!isReceived.containsKey(addressReceived.getHostAddress()))
-            {
-                isReceived.put(addressReceived.getHostAddress(),new HashSet<>());
-            }
-            if(isReceived.get(addressReceived.getHostAddress()).contains(messageId)) {
+            Message message = new Message(messageId, addressReceived);
+            if(isReceived.contains(message)) {
                 ackType = 0;
                 System.out.println("Message #" + messageId + ": " + content + " duplicate");
             }
             else {
                 ackType = 1;
                 System.out.println("Message #" + messageId + ": " + content + " was successfully received");
-                isReceived.get(addressReceived.getHostAddress()).add(messageId);
+                isReceived.add(message);
             }
             sendAck(socketIn, portReceived, addressReceived, ackType, messageId);
         }
