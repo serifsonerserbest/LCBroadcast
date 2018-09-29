@@ -8,7 +8,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 import java.util.HashSet;
-import java.util.concurrent.Semaphore;
 
 public class Receiver {
 
@@ -25,12 +24,17 @@ public class Receiver {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             Message message = (Message) o;
-            return address.hashCode() + messageId * 31 == message.address.hashCode() + message.messageId * 31;
+            return hashCode() == message.hashCode();
         }
-
+        public int hash(int x) {
+            x = ((x >> 16) ^ x) * 0x45d9f3b;
+            x = ((x >> 16) ^ x) * 0x45d9f3b;
+            x = (x >> 16) ^ x;
+            return x;
+        }
         @Override
         public int hashCode() {
-            return address.hashCode() + messageId * 31;
+            return address.hashCode() + hash(messageId);
         }
     }
     HashSet<Message> isReceived;
@@ -63,24 +67,13 @@ public class Receiver {
             int content = messageArray[1];
             Message message = new Message(messageId, addressReceived);
             if(isReceived.contains(message)) {
-                ackType = 0;
                 System.out.println("Message #" + messageId + ": " + content + " duplicate");
             }
             else {
-                ackType = 1;
                 System.out.println("Message #" + messageId + ": " + content + " was successfully received");
                 isReceived.add(message);
             }
-            sendAck(socketIn, portReceived, addressReceived, ackType, messageId);
         }
 
-    }
-    public void sendAck(DatagramSocket socket, int port, InetAddress address, int ackType, int messageId) throws IOException {
-        int[] data = {/*ackType,*/ messageId};
-        ByteBuffer byteBuffer = ByteBuffer.allocate(data.length * 4);
-        IntBuffer intBuffer = byteBuffer.asIntBuffer();
-        intBuffer.put(data);
-        byte[] sentData = byteBuffer.array();
-        socket.send(new DatagramPacket(sentData, sentData.length, address, port));
     }
 }
