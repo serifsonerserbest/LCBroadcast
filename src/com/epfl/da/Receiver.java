@@ -8,27 +8,26 @@ import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 import java.util.concurrent.Semaphore;
 
 public class Receiver {
 
 
-    public class Message{
+  /*  public class Message{
         int messageId;
         InetAddress address;
         public Message(int messageId, InetAddress address) {
             this.messageId = messageId;
             this.address = address;
         }
-    }
-    HashSet<Message> isReceived;
+    }*/
+    HashMap<String, HashSet<Integer>> isReceived;
     Semaphore s;
-    DatagramSocket socketIn, socketOut;
+    DatagramSocket socketIn;
     public Receiver() {
         s = new Semaphore(1);
-        isReceived = new HashSet<>();
+        isReceived = new HashMap<>();
     }
     public void ReceiveMessage(int port) throws IOException {
         socketIn = new DatagramSocket(port);
@@ -53,22 +52,26 @@ public class Receiver {
             intBuf.get(messageArray);
             int messageId = messageArray[0];
             int content = messageArray[1];
-            Message message = new Message(messageId, addressReceived);
-            socketOut = new DatagramSocket(portReceived);
-            if(isReceived.contains(message)) {
+            //Message message = new Message(messageId, addressReceived);
+            if(!isReceived.containsKey(addressReceived.getHostAddress()))
+            {
+                isReceived.put(addressReceived.getHostAddress(),new HashSet<>());
+            }
+            if(isReceived.get(addressReceived.getHostAddress()).contains(messageId)) {
                 ackType = 0;
+                System.out.println("Message #" + messageId + ": " + content + " duplicate");
             }
             else {
                 ackType = 1;
                 System.out.println("Message #" + messageId + ": " + content + " was successfully received");
-                isReceived.add(message);
+                isReceived.get(addressReceived.getHostAddress()).add(messageId);
             }
-            sendAck(socketOut, portReceived, addressReceived, ackType, messageId);
+            sendAck(socketIn, portReceived, addressReceived, ackType, messageId);
         }
 
     }
     public void sendAck(DatagramSocket socket, int port, InetAddress address, int ackType, int messageId) throws IOException {
-        int[] data = {ackType, messageId};
+        int[] data = {/*ackType,*/ messageId};
         ByteBuffer byteBuffer = ByteBuffer.allocate(data.length * 4);
         IntBuffer intBuffer = byteBuffer.asIntBuffer();
         intBuffer.put(data);
