@@ -16,6 +16,7 @@ public class Logger {
     }
 
     public void WriteToLog (final String message) {
+        // todo think about multithreading
         if(message != null && !message.trim().isEmpty())
         {
             Log.add(message);
