@@ -37,15 +37,15 @@ public class Sender {
         private DatagramSocket sk_out;
         private int dst_port;
         private InetAddress dst_addr;
-        int message;
+        int content;
         int messageId;
 
         // OutThread constructor
-        public OutThread(DatagramSocket sk_out, int dst_port, InetAddress dst_addr, int message, int messageId) {
+        public OutThread(DatagramSocket sk_out, int dst_port, InetAddress dst_addr, int content, int messageId) {
             this.sk_out = sk_out;
             this.dst_port = dst_port;
             this.dst_addr = dst_addr;
-            this.message = message;
+            this.content = content;
             this.messageId = messageId;
         }
 
@@ -53,7 +53,7 @@ public class Sender {
         public void run() {
 
             byte[] in_data = new byte[32];    // ack packet with no data
-            int[] data = {this.messageId, this.message};
+            int[] data = {this.messageId, this.content};
             ByteBuffer byteBuffer = ByteBuffer.allocate(data.length * 4);
             IntBuffer intBuffer = byteBuffer.asIntBuffer();
             intBuffer.put(data);
