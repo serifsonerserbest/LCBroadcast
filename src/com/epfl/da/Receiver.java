@@ -15,12 +15,24 @@ import java.util.concurrent.Semaphore;
 public class Receiver {
 
 
-    public class Message{
+    class Message{
         int messageId;
         InetAddress address;
         public Message(int messageId, InetAddress address) {
             this.messageId = messageId;
             this.address = address;
+        }
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Message message = (Message) o;
+            return address.hashCode() + messageId * 31 == message.address.hashCode() + message.messageId * 31;
+        }
+
+        @Override
+        public int hashCode() {
+            return address.hashCode() + messageId * 31;
         }
     }
     HashSet<Message> isReceived;
