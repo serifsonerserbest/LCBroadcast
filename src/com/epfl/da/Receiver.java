@@ -14,10 +14,10 @@ public class Receiver {
 
     class Message{
         int messageId;
-        InetAddress address;
-        public Message(int messageId, InetAddress address) {
+        int port;
+        public Message(int messageId, int port) {
             this.messageId = messageId;
-            this.address = address;
+            this.port = port;
         }
         @Override
         public boolean equals(Object o) {
@@ -26,15 +26,16 @@ public class Receiver {
             Message message = (Message) o;
             return hashCode() == message.hashCode();
         }
-        public int hash(int x) {
-            x = ((x >> 16) ^ x) * 0x45d9f3b;
-            x = ((x >> 16) ^ x) * 0x45d9f3b;
-            x = (x >> 16) ^ x;
-            return x;
+        public int cantorPairing() {
+            int sum = this.messageId + this.port;
+            if(sum % 2 == 0) sum = sum / 2 * (sum + 1);
+            else sum = (sum + 1) / 2 * sum;
+            int cantorValue = sum + this.port;
+            return cantorValue;
         }
         @Override
         public int hashCode() {
-            return address.hashCode() + hash(messageId);
+            return this.cantorPairing();
         }
     }
     HashSet<Message> isReceived;
@@ -65,7 +66,7 @@ public class Receiver {
             intBuf.get(messageArray);
             int messageId = messageArray[0];
             int content = messageArray[1];
-            Message message = new Message(messageId, addressReceived);
+            Message message = new Message(messageId, portReceived);
             if(isReceived.contains(message)) {
                 ackType = 0;
                 System.out.println("Message #" + messageId + ": " + content + " duplicate");
