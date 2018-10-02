@@ -3,52 +3,45 @@ package com.epfl.da;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import java.nio.charset.StandardCharsets;
-import java.util.Timer;
-import java.util.concurrent.Semaphore;
-import java.util.Timer;
-import java.util.TimerTask;
 
-public class Sender {
+public class SendEvent {
 
     static final int timeoutVal = 300;		// 300ms until timeout
     private static int messageId = 0;
 
-    public Sender() {
+    public SendEvent() {
     }
 
-
-    public void SendMessage(int message, InetAddress dst_addr, int sk4_dst_port)
+    public void SendMessage(int message, InetAddress destAddress, int destPort)
     {
-        DatagramSocket sk1;
+        DatagramSocket socketOut;
 
         try {
-            sk1 = new DatagramSocket();                // outgoing channel
-            sk1.setSoTimeout(timeoutVal);
+            socketOut = new DatagramSocket();                // outgoing channel
+            socketOut.setSoTimeout(timeoutVal);
             ++messageId;
-            OutThread th_out = new OutThread(sk1, sk4_dst_port, dst_addr, message, messageId);
+            ThreadSend th_out = new ThreadSend(socketOut, destPort, destAddress, message, messageId);
             th_out.start();
         } catch (SocketException e) {
             e.printStackTrace();
         }
     }
 
-    private class OutThread extends Thread {
-        private DatagramSocket sk_out;
-        private int dst_port;
-        private InetAddress dst_addr;
+    private class ThreadSend extends Thread {
+        private DatagramSocket socketOut;
+        private int destPort;
+        private InetAddress destAddress;
         int content;
         int messageId;
 
-        // OutThread constructor
-        public OutThread(DatagramSocket sk_out, int dst_port, InetAddress dst_addr, int content, int messageId) {
-            this.sk_out = sk_out;
-            this.dst_port = dst_port;
-            this.dst_addr = dst_addr;
+        // ThreadSend constructor
+        public ThreadSend(DatagramSocket socketOut, int destPort, InetAddress destAddress, int content, int messageId) {
+            this.socketOut = socketOut;
+            this.destPort = destPort;
+            this.destAddress = destAddress;
             this.content = content;
             this.messageId = messageId;
         }
-
 
         public void run() {
 
@@ -59,19 +52,19 @@ public class Sender {
             intBuffer.put(data);
             byte[] out_data = byteBuffer.array();
 
-            DatagramPacket sendingPacket = new DatagramPacket(out_data, out_data.length, dst_addr, dst_port);
+            DatagramPacket sendingPacket = new DatagramPacket(out_data, out_data.length, destAddress, destPort);
             DatagramPacket receivePacket =  new DatagramPacket(in_data, in_data.length);
             try {
                 // while there are still packets yet to be received by receiver
                 while (true) {
 
-                    sk_out.send(sendingPacket);
-                    System.out.println("Sender: Sent " + messageId);
+                    socketOut.send(sendingPacket);
+                    System.out.println("SendEvent: Sent " + messageId);
                     try {
-                        sk_out.receive(receivePacket);
+                        socketOut.receive(receivePacket);
                         ByteBuffer wrapped = ByteBuffer.wrap(in_data); // big-endian by default
                         int messageId = wrapped.getInt();
-                        System.out.println("Sender: Received Ack " + messageId);
+                        System.out.println("SendEvent: Received Ack " + messageId);
                         if (this.messageId == messageId) {
                             break;
                         }
@@ -82,8 +75,8 @@ public class Sender {
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
-                sk_out.close();        // close outgoing socket
-                System.out.println("Sender: sk_out closed!");
+                socketOut.close();        // close outgoing socket
+                System.out.println("SendEvent: socketOut closed!");
             }
 
         }

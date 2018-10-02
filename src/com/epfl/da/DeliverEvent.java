@@ -9,8 +9,7 @@ import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 import java.util.HashSet;
 
-public class Receiver {
-
+public class DeliverEvent {
 
     class Message{
         int messageId;
@@ -38,18 +37,22 @@ public class Receiver {
             return this.cantorPairing();
         }
     }
+
     HashSet<Message> isReceived;
     DatagramSocket socketIn;
-    public Receiver() {
+
+    public DeliverEvent() {
         isReceived = new HashSet<>();
     }
+
     public void ReceiveMessage(int port) throws IOException {
+
         socketIn = new DatagramSocket(port);
         byte[] packetReceived = new byte[1024];
         InetAddress addressReceived;
         byte[] messageReceived;
         int portReceived;
-        int ackType;
+
         while(true) {
             //receiving packet
             DatagramPacket receivedPacket = new DatagramPacket(packetReceived, packetReceived.length);
@@ -68,20 +71,19 @@ public class Receiver {
             int content = messageArray[1];
             Message message = new Message(messageId, portReceived);
             if(isReceived.contains(message)) {
-                ackType = 0;
                 System.out.println("Message #" + messageId + ": " + content + " duplicate");
             }
             else {
-                ackType = 1;
-                System.out.println("Message #" + messageId + ": " + content + " was successfully received");
+                System.out.println("Message #" + messageId + ": " + content + " is delivered");
                 isReceived.add(message);
             }
-            sendAck(socketIn, portReceived, addressReceived, ackType, messageId);
+            sendAck(socketIn, portReceived, addressReceived, messageId);
         }
 
     }
-    public void sendAck(DatagramSocket socket, int port, InetAddress address, int ackType, int messageId) throws IOException {
-        int[] data = {ackType, messageId};
+
+    public void sendAck(DatagramSocket socket, int port, InetAddress address, int messageId) throws IOException {
+        int[] data = {messageId};
         ByteBuffer byteBuffer = ByteBuffer.allocate(data.length * 4);
         IntBuffer intBuffer = byteBuffer.asIntBuffer();
         intBuffer.put(data);
