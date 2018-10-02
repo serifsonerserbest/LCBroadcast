@@ -33,6 +33,13 @@ public class Sender {
         }
     }
 
+    public void BroadcastMessage(int message, InetAddress[] addresses, int[] ports)
+    {
+        for (int i = 0; i < addresses.length; i++) {
+            SendMessage(message, addresses[i], ports[i]);
+        }
+    }
+
     private class OutThread extends Thread {
         private DatagramSocket sk_out;
         private int dst_port;
