@@ -15,13 +15,13 @@ public class Main {
 
     private static void TestReceive() throws IOException {
         PerfectLink server = new PerfectLink();
-        server.deliver(20002);
+        server.Deliver(20002);
     }
 
     private static void TestSend() throws UnknownHostException {
         PerfectLink client = new PerfectLink();
         for (int x = 1; x <= 1000; x++){
-            client.send(x, InetAddress.getByName("127.0.0.1"), 20002);
+            client.Send(x, InetAddress.getByName("127.0.0.1"), 20002);
         }
     }
 

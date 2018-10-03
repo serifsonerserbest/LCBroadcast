@@ -13,11 +13,11 @@ public class PerfectLink {
         deliverEvent = new DeliverEvent();
     }
 
-    public void send(int message, InetAddress destAddress, int destPort){
+    public void Send(int message, InetAddress destAddress, int destPort){
         sendEvent.SendMessage(message, destAddress, destPort);
     }
 
-    public void deliver(int port) throws IOException {
+    public void Deliver(int port) throws IOException {
         deliverEvent.ReceiveMessage(port);
     }
 }
