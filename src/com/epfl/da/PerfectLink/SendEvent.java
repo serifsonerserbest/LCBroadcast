@@ -1,4 +1,4 @@
-package com.epfl.da;
+package com.epfl.da.PerfectLink;
 
 import java.net.*;
 import java.nio.ByteBuffer;

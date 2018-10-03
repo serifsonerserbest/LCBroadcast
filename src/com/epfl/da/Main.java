@@ -1,11 +1,9 @@
 package com.epfl.da;
 
-import sun.misc.Signal;
-import sun.misc.SignalHandler;
+import com.epfl.da.BestEffordBroadcast.BestEffortBroadcast;
+import com.epfl.da.PerfectLink.PerfectLink;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -25,10 +23,29 @@ public class Main {
         }
     }
 
+
+    private static void TestSendBE() throws UnknownHostException {
+        BestEffortBroadcast client = new BestEffortBroadcast();
+
+        int[] ports = {20001,20002,20003};
+        InetAddress[] addresses = {InetAddress.getByName("127.0.0.1"),InetAddress.getByName("127.0.0.1"),InetAddress.getByName("127.0.0.1")};
+        client.Broadcast(1, addresses, ports);
+    }
+
     public static void main(String[] args) throws InterruptedException, IOException {
         Process process = new Process(1);
 
         //TestReceivePL();
         //TestSendPL();
+        //BestEffortBroadcast server1 = new BestEffortBroadcast();
+        //server1.Deliver(20001);
+        //BestEffortBroadcast server2 = new BestEffortBroadcast();
+        //server2.Deliver(20002);
+        //BestEffortBroadcast server3 = new BestEffortBroadcast();
+        //server3.Deliver(20003);
+
+        TestSendBE();
+
+
     }
 }

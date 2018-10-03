@@ -1,4 +1,6 @@
-package com.epfl.da;
+package com.epfl.da.BestEffordBroadcast;
+
+import com.epfl.da.PerfectLink.PerfectLink;
 
 import java.io.IOException;
 import java.net.InetAddress;
