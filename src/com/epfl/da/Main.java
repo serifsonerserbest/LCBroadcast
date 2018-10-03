@@ -9,29 +9,27 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+
+
 public class Main {
 
-    public static void main(String[] args) throws InterruptedException {
-        Process process = new Process(1);
-        /*Receiver r = new Receiver();
-        try {
-            r.ReceiveMessage(20002);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
-       /* Sender s = new Sender();
-        try {
-            s.SendMessage(1, InetAddress.getByName("127.0.0.1"), 20002);
-            s.SendMessage(2, InetAddress.getByName("127.0.0.1"), 20002);
-            s.SendMessage(3, InetAddress.getByName("127.0.0.1"), 20002);
-            s.SendMessage(4, InetAddress.getByName("127.0.0.1"), 20002);
-            s.SendMessage(5, InetAddress.getByName("127.0.0.1"), 20002);
-            s.SendMessage(6, InetAddress.getByName("127.0.0.1"), 20002);
-            s.SendMessage(7, InetAddress.getByName("127.0.0.1"), 20002);
-            s.SendMessage(8, InetAddress.getByName("127.0.0.1"), 20002);
+    private static void TestReceive() throws IOException {
+        PerfectLink server = new PerfectLink();
+        server.deliver(20002);
+    }
 
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }*/
+    private static void TestSend() throws UnknownHostException {
+        PerfectLink client = new PerfectLink();
+        for (int x = 1; x <= 1000; x++){
+            client.send(x, InetAddress.getByName("127.0.0.1"), 20002);
+        }
+    }
+
+    public static void main(String[] args) throws InterruptedException, IOException {
+        Process process = new Process(1);
+
+        //TestReceive();
+        //TestSend();
+
     }
 }
