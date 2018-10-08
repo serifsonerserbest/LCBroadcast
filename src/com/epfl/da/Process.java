@@ -3,13 +3,31 @@ package com.epfl.da;
 import sun.misc.Signal;
 import sun.misc.SignalHandler;
 
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+
 public class Process {
-    public final int Id;
-    public final Logger Logger;
-    public Process(int id)
+
+
+    private static final Process process = new Process();
+    public int Id;
+    public Logger Logger;
+    public FailureDetector FailureDetector;
+
+    private Process() {}
+
+    public static Process getInstance() {
+        return process;
+    }
+
+
+    public void Init(int id, ArrayList<InetSocketAddress> addresses)
     {
         Id = id;
         Logger = new Logger(Id);
+        FailureDetector = new FailureDetector(addresses);
         SetupSignalHandlers();
     }
 

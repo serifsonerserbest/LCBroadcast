@@ -14,7 +14,7 @@ public class PerfectLink {
     }
 
     public void Send(int message, InetAddress destAddress, int destPort){
-        sendEvent.SendMessage(message, destAddress, destPort);
+        sendEvent.SendDataMessage(message, destAddress, destPort);
     }
 
     public void Deliver(int port) throws IOException {

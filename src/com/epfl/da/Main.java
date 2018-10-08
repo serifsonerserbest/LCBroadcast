@@ -1,19 +1,23 @@
 package com.epfl.da;
 
 import com.epfl.da.BestEffordBroadcast.BestEffortBroadcast;
+import com.epfl.da.Interfaces.ReceiveAcknowledgeHandler;
 import com.epfl.da.PerfectLink.PerfectLink;
+import com.epfl.da.PerfectLink.SendEvent;
 
 import java.io.IOException;
+import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-
+import java.util.ArrayList;
 
 
 public class Main {
 
     private static void TestReceivePL() throws IOException {
         PerfectLink server = new PerfectLink();
-        server.Deliver(20002);
+        server.Deliver(20000);
     }
 
     private static void TestSendPL() throws UnknownHostException {
@@ -33,9 +37,14 @@ public class Main {
     }
 
     public static void main(String[] args) throws InterruptedException, IOException {
-        Process process = new Process(1);
 
-        //TestReceivePL();
+        ArrayList<InetSocketAddress> adr = new  ArrayList<InetSocketAddress>();
+        adr.add(new InetSocketAddress(Inet4Address.getByName("127.0.0.1"),20000));
+        Process.getInstance().Init(1, adr);
+
+
+
+        TestReceivePL();
         //TestSendPL();
         //BestEffortBroadcast server1 = new BestEffortBroadcast();
         //server1.Deliver(20001);
@@ -44,7 +53,7 @@ public class Main {
         //BestEffortBroadcast server3 = new BestEffortBroadcast();
         //server3.Deliver(20003);
 
-        TestSendBE();
+        //TestSendBE();
 
 
     }
