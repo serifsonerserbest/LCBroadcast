@@ -1,6 +1,5 @@
 package com.epfl.da.PerfectLink;
 
-import com.epfl.da.Enums.MessageTypeEnum;
 import com.epfl.da.Interfaces.ReceiveAcknowledgeHandler;
 
 import java.io.IOException;
@@ -19,16 +18,7 @@ public class SendEvent {
     }
 
 
-    public void SendDataMessage(int message, InetAddress destAddress, int destPort)
-    {
-        SendMessage(message, destAddress, destPort, MessageTypeEnum.Data);
-    }
-    public void SendPingMessage(InetAddress destAddress, int destPort)
-    {
-        SendMessage(1, destAddress, destPort, MessageTypeEnum.Ping);
-    }
-
-    private void SendMessage(int message, InetAddress destAddress, int destPort, MessageTypeEnum messageType)
+    public void SendMessage(int message, InetAddress destAddress, int destPort)
     {
         DatagramSocket socketOut;
 
@@ -36,7 +26,7 @@ public class SendEvent {
             socketOut = new DatagramSocket();                // outgoing channel
             socketOut.setSoTimeout(timeoutVal);
             ++messageId;
-            ThreadSend th_out = new ThreadSend(socketOut, destPort, destAddress, message, messageId, messageType, receiveAcknowledgeHandler);
+            ThreadSend th_out = new ThreadSend(socketOut, destPort, destAddress, message, messageId, receiveAcknowledgeHandler);
             th_out.start();
         } catch (SocketException e) {
             e.printStackTrace();
@@ -49,17 +39,15 @@ public class SendEvent {
         private InetAddress destAddress;
         int content;
         int messageId;
-        MessageTypeEnum messageType;
         ReceiveAcknowledgeHandler receiveAcknowledgeHandler;
 
         // ThreadSend constructor
-        public ThreadSend(DatagramSocket socketOut, int destPort, InetAddress destAddress, int content, int messageId, MessageTypeEnum messageType, ReceiveAcknowledgeHandler receiveAcknowledgeHandler) {
+        public ThreadSend(DatagramSocket socketOut, int destPort, InetAddress destAddress, int content, int messageId, ReceiveAcknowledgeHandler receiveAcknowledgeHandler) {
             this.socketOut = socketOut;
             this.destPort = destPort;
             this.destAddress = destAddress;
             this.content = content;
             this.messageId = messageId;
-            this.messageType = messageType;
             this.receiveAcknowledgeHandler = receiveAcknowledgeHandler;
         }
 
@@ -76,11 +64,8 @@ public class SendEvent {
             DatagramPacket receivePacket =  new DatagramPacket(in_data, in_data.length);
             boolean result = false;
             try {
-                if (messageType == messageType.Data) {
                     result = SendDataMessage(sendingPacket, receivePacket);
-                } else if (messageType == messageType.Ping) {
-                    result = SendPingMessage(sendingPacket, receivePacket);
-                }
+
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -113,9 +98,7 @@ public class SendEvent {
             }
             return false;
         }
-        private boolean SendPingMessage(DatagramPacket sendingPacket, DatagramPacket receivePacket) throws IOException {
-           return SendMessage(sendingPacket,receivePacket, 4);
-        }
+
         private boolean SendDataMessage(DatagramPacket sendingPacket, DatagramPacket receivePacket) throws IOException {
             return SendMessage(sendingPacket,receivePacket, -1);
         }

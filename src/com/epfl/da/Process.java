@@ -14,7 +14,6 @@ public class Process {
     private static final Process process = new Process();
     public int Id;
     public Logger Logger;
-    public FailureDetector FailureDetector;
 
     private Process() {}
 
@@ -27,7 +26,6 @@ public class Process {
     {
         Id = id;
         Logger = new Logger(Id);
-        FailureDetector = new FailureDetector(addresses);
         SetupSignalHandlers();
     }
 

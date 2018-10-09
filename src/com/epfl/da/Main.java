@@ -17,7 +17,7 @@ public class Main {
 
     private static void TestReceivePL() throws IOException {
         PerfectLink server = new PerfectLink();
-        server.Deliver(20000);
+        server.Deliver(20002);
     }
 
     private static void TestSendPL() throws UnknownHostException {
@@ -44,7 +44,7 @@ public class Main {
 
 
 
-        TestReceivePL();
+        //TestReceivePL();
         //TestSendPL();
         //BestEffortBroadcast server1 = new BestEffortBroadcast();
         //server1.Deliver(20001);
