@@ -1,9 +1,7 @@
 package com.epfl.da;
 
 import com.epfl.da.BestEffordBroadcast.BestEffortBroadcast;
-import com.epfl.da.Interfaces.ReceiveAcknowledgeHandler;
 import com.epfl.da.PerfectLink.PerfectLink;
-import com.epfl.da.PerfectLink.SendEvent;
 
 import java.io.IOException;
 import java.net.Inet4Address;
@@ -17,7 +15,7 @@ public class Main {
 
     private static void TestReceivePL() throws IOException {
         PerfectLink server = new PerfectLink();
-        server.Deliver(20002);
+        //server.Deliver(20002);
     }
 
     private static void TestSendPL() throws UnknownHostException {
@@ -42,7 +40,26 @@ public class Main {
         adr.add(new InetSocketAddress(Inet4Address.getByName("127.0.0.1"),20000));
         Process.getInstance().Init(1, adr);
 
+        long startTime = System.currentTimeMillis();
 
+        Runtime.getRuntime().addShutdownHook(new Thread()
+        {
+            @Override
+            public void run()
+            {
+                long stopTime = System.currentTimeMillis();
+                long elapsedTime = stopTime - startTime;
+                System.out.println(elapsedTime);
+            }
+        });
+
+       /* Listener l = new Listener();
+        l.Start(20000);*/
+
+       /* PerfectLink client = new PerfectLink();
+        for (int x = 0; x < 40000; x++){
+            client.Send(x, InetAddress.getByName("127.0.0.1"), 20000);
+        }*/
 
         //TestReceivePL();
         //TestSendPL();

@@ -1,24 +1,28 @@
 package com.epfl.da.PerfectLink;
 
-import com.epfl.da.Interfaces.ReceiveAcknowledgeHandler;
+import com.epfl.da.Enums.ProtocolTypeEnum;
+import com.epfl.da.Interfaces.BaseHandler;
 
 import java.io.IOException;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class SendEvent {
 
     static final int timeoutVal = 300;		// 300ms until timeout
     private static int messageId = 0;
 
-    public ReceiveAcknowledgeHandler receiveAcknowledgeHandler;
-
+    public BaseHandler receiveAcknowledgeHandler;
+    ExecutorService service;
     public SendEvent() {
+        service = Executors.newCachedThreadPool();
     }
 
 
-    public void SendMessage(int message, InetAddress destAddress, int destPort)
+    public void SendMessage(int message, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol)
     {
         DatagramSocket socketOut;
 
@@ -26,8 +30,10 @@ public class SendEvent {
             socketOut = new DatagramSocket();                // outgoing channel
             socketOut.setSoTimeout(timeoutVal);
             ++messageId;
-            ThreadSend th_out = new ThreadSend(socketOut, destPort, destAddress, message, messageId, receiveAcknowledgeHandler);
-            th_out.start();
+             service.submit(new ThreadSend(socketOut, destPort, destAddress, message, messageId, protocol));
+
+            //ThreadSend th_out = new ThreadSend(socketOut, destPort, destAddress, message, messageId, receiveAcknowledgeHandler);
+            //th_out.start();
         } catch (SocketException e) {
             e.printStackTrace();
         }
@@ -39,22 +45,22 @@ public class SendEvent {
         private InetAddress destAddress;
         int content;
         int messageId;
-        ReceiveAcknowledgeHandler receiveAcknowledgeHandler;
+        ProtocolTypeEnum protocol;
 
         // ThreadSend constructor
-        public ThreadSend(DatagramSocket socketOut, int destPort, InetAddress destAddress, int content, int messageId, ReceiveAcknowledgeHandler receiveAcknowledgeHandler) {
+        public ThreadSend(DatagramSocket socketOut, int destPort, InetAddress destAddress, int content, int messageId, ProtocolTypeEnum protocol) {
             this.socketOut = socketOut;
             this.destPort = destPort;
             this.destAddress = destAddress;
             this.content = content;
             this.messageId = messageId;
-            this.receiveAcknowledgeHandler = receiveAcknowledgeHandler;
+            this.protocol = protocol;
         }
 
         public void run() {
 
             byte[] in_data = new byte[32];    // ack packet with no data
-            int[] data = {this.messageId, this.content};
+            int[] data = {this.messageId, protocol.ordinal(), this.content};
             ByteBuffer byteBuffer = ByteBuffer.allocate(data.length * 4);
             IntBuffer intBuffer = byteBuffer.asIntBuffer();
             intBuffer.put(data);
@@ -65,7 +71,6 @@ public class SendEvent {
             boolean result = false;
             try {
                     result = SendDataMessage(sendingPacket, receivePacket);
-
 
             } catch (Exception e) {
                 e.printStackTrace();

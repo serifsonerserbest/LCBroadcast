@@ -24,7 +24,7 @@ public class BestEffortBroadcast {
     }
 
     public void Deliver(int port) throws IOException {
-        perfectlink.Deliver(port);
+        //perfectlink.Deliver(port);
     }
 }
 
