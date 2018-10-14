@@ -23,16 +23,17 @@ public class PerfectLink {
 
     /** For PerfectLink */
     public void Send(int message, InetAddress destAddress, int destPort){
-        sendEvent.SendMessage(message, destAddress, destPort, ProtocolTypeEnum.PerfectLink, 0 , 0);
+        var id = SendEvent.NextId();
+        sendEvent.SendMessage(message, destAddress, destPort, ProtocolTypeEnum.PerfectLink, 0 , 0, id);
     }
 
-    public void Send(int message, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol){
-        sendEvent.SendMessage(message, destAddress, destPort, protocol, 0 , 0);
+    public void Send(int message, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int messageId){
+        sendEvent.SendMessage(message, destAddress, destPort, protocol, 0 , 0, messageId);
     }
     /** For UniformReliableBroadcast */
-    public void Send(int message, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId){
+    public void Send(int message, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int messageId){
         sendEvent.receiveAcknowledgeHandler = receiveAcknowledgeHandler;
-        sendEvent.SendMessage(message, destAddress, destPort, protocol, originalProcessId, originalMessageId );
+        sendEvent.SendMessage(message, destAddress, destPort, protocol, originalProcessId, originalMessageId, messageId );
     }
 
     public void Deliver(int port, InetAddress address, int messageId, int content) throws IOException {

@@ -2,6 +2,7 @@ package com.epfl.da.PerfectLink;
 
 import com.epfl.da.Enums.ProtocolTypeEnum;
 import com.epfl.da.Interfaces.BaseHandler;
+import com.epfl.da.Process;
 
 import java.io.IOException;
 import java.net.*;
@@ -12,24 +13,26 @@ import java.util.concurrent.Executors;
 
 public class SendEvent {
 
-    static final int timeoutVal = 300;		// 300ms until timeout
-    private static int messageId = 0;
+    static final int timeoutVal = 30000;		// 300ms until timeout
+    public static int messageId = 0;
 
     public BaseHandler receiveAcknowledgeHandler;
-    ExecutorService service;
+    static ExecutorService service = Executors.newCachedThreadPool();
     public SendEvent() {
-        service = Executors.newCachedThreadPool();
     }
 
+    public static int NextId()
+    {
+       return ++messageId;
+    }
 
-    public void SendMessage(int message, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId)
+    public void SendMessage(int message, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int messageId)
     {
         DatagramSocket socketOut;
 
         try {
             socketOut = new DatagramSocket();                // outgoing channel
             socketOut.setSoTimeout(timeoutVal);
-            ++messageId;
              service.submit(new ThreadSend(socketOut, destPort, destAddress, message, messageId, protocol, originalProcessId, originalMessageId));
 
             //ThreadSend th_out = new ThreadSend(socketOut, destPort, destAddress, message, messageId, receiveAcknowledgeHandler);
@@ -65,7 +68,7 @@ public class SendEvent {
 
             byte[] in_data = new byte[32];    // ack packet with no data
             //todo create data according to protocol
-            int[] data = {this.messageId, protocol.ordinal(), this.content, originalProcessId, originalMessageId};
+            int[] data = {this.messageId, protocol.ordinal(), this.content, Process.getInstance().Id, originalProcessId, originalMessageId};
             ByteBuffer byteBuffer = ByteBuffer.allocate(data.length * 4);
             IntBuffer intBuffer = byteBuffer.asIntBuffer();
             intBuffer.put(data);
