@@ -22,7 +22,7 @@ public class SendEvent {
     }
 
 
-    public void SendMessage(int message, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol)
+    public void SendMessage(int message, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId)
     {
         DatagramSocket socketOut;
 
@@ -30,7 +30,7 @@ public class SendEvent {
             socketOut = new DatagramSocket();                // outgoing channel
             socketOut.setSoTimeout(timeoutVal);
             ++messageId;
-             service.submit(new ThreadSend(socketOut, destPort, destAddress, message, messageId, protocol));
+             service.submit(new ThreadSend(socketOut, destPort, destAddress, message, messageId, protocol, originalProcessId, originalMessageId));
 
             //ThreadSend th_out = new ThreadSend(socketOut, destPort, destAddress, message, messageId, receiveAcknowledgeHandler);
             //th_out.start();
@@ -46,21 +46,26 @@ public class SendEvent {
         int content;
         int messageId;
         ProtocolTypeEnum protocol;
+        int originalProcessId;
+        int originalMessageId;
 
         // ThreadSend constructor
-        public ThreadSend(DatagramSocket socketOut, int destPort, InetAddress destAddress, int content, int messageId, ProtocolTypeEnum protocol) {
+        public ThreadSend(DatagramSocket socketOut, int destPort, InetAddress destAddress, int content, int messageId, ProtocolTypeEnum protocol,  int originalProcessId, int originalMessageId) {
             this.socketOut = socketOut;
             this.destPort = destPort;
             this.destAddress = destAddress;
             this.content = content;
             this.messageId = messageId;
             this.protocol = protocol;
+            this.originalMessageId = originalMessageId;
+            this.originalProcessId = originalProcessId;
         }
 
         public void run() {
 
             byte[] in_data = new byte[32];    // ack packet with no data
-            int[] data = {this.messageId, protocol.ordinal(), this.content};
+            //todo create data according to protocol
+            int[] data = {this.messageId, protocol.ordinal(), this.content, originalProcessId, originalMessageId};
             ByteBuffer byteBuffer = ByteBuffer.allocate(data.length * 4);
             IntBuffer intBuffer = byteBuffer.asIntBuffer();
             intBuffer.put(data);

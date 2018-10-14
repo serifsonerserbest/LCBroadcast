@@ -38,9 +38,9 @@ public class Main {
 
         ArrayList<InetSocketAddress> adr = new  ArrayList<InetSocketAddress>();
         adr.add(new InetSocketAddress(Inet4Address.getByName("127.0.0.1"),20000));
-        Process.getInstance().Init(1, adr);
+        Process.getInstance().Init(1, "membership.txt");
 
-        long startTime = System.currentTimeMillis();
+        /*long startTime = System.currentTimeMillis();
 
         Runtime.getRuntime().addShutdownHook(new Thread()
         {
@@ -51,7 +51,7 @@ public class Main {
                 long elapsedTime = stopTime - startTime;
                 System.out.println(elapsedTime);
             }
-        });
+        });*/
 
        /* Listener l = new Listener();
         l.Start(20000);*/

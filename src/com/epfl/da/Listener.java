@@ -1,10 +1,12 @@
 package com.epfl.da;
 
+import com.epfl.da.BestEffordBroadcast.BestEffortBroadcast;
 import com.epfl.da.Enums.ProtocolTypeEnum;
 import com.epfl.da.Interfaces.BaseHandler;
 import com.epfl.da.Interfaces.MessageHandler;
 import com.epfl.da.Models.Message;
 import com.epfl.da.PerfectLink.PerfectLink;
+import com.epfl.da.UniformReliableBroadcast.UniformReliableBroadcast;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -22,12 +24,17 @@ public class Listener {
     HashSet<Message> receivedMessages;
     DatagramSocket socketIn;
     PerfectLink perfectLink;
+    BestEffortBroadcast bestEffortBroadcast;
+    UniformReliableBroadcast uniformReliableBroadcast;
+
 
     public MessageHandler onMessageReceive;
 
     public Listener() {
         receivedMessages = new HashSet<>();
         perfectLink = new PerfectLink();
+        bestEffortBroadcast = new BestEffortBroadcast();
+        uniformReliableBroadcast = new UniformReliableBroadcast();
     }
 
     public void Start(int port) throws IOException {
@@ -89,7 +96,22 @@ public class Listener {
                 if (protocol == ProtocolTypeEnum.PerfectLink.ordinal()) {
                     perfectLink.Deliver(portReceived, addressReceived, messageId, content);
 
-                } else if (protocol == ProtocolTypeEnum.PerfectLink.ordinal()) {
+                }
+                else if (protocol == ProtocolTypeEnum.BestEffortBroadcast.ordinal()) {
+                    bestEffortBroadcast.Deliver(portReceived, addressReceived, messageId, content);
+                }
+                else if (protocol == ProtocolTypeEnum.UniformReliableBroadcast.ordinal()) {
+                   int originalProcessId = messageArray[3];
+                   int originalMessageId = messageArray[4];
+                   var originalProcess = Process.getInstance().GetProcessById(originalProcessId);
+                   Message originalMessage = new Message(originalMessageId, originalProcess.port);
+                   if (receivedMessages.contains(originalMessage)) {
+
+                   } else {
+                       receivedMessages.add(message);
+                       uniformReliableBroadcast.Broadcast(messageId, originalProcessId, originalMessageId);
+                       uniformReliableBroadcast.onMessageReceive = (x)->{};
+                   }
 
                 } else {
                     System.out.println("Unknown protocol " + protocol);
