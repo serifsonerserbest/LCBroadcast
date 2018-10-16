@@ -95,7 +95,7 @@ public class SendEvent {
             int counter = 0;
             while(attempts == -1 || counter <  attempts) {
                 socketOut.send(sendingPacket);
-                System.out.println("SendEvent: Sent " + messageId);
+                System.out.println("SendEvent: Sent, Message Id:" + messageId);
                 try {
                     socketOut.receive(receivePacket);
                     ByteBuffer wrapped = ByteBuffer.wrap(receivePacket.getData()); // big-endian by default

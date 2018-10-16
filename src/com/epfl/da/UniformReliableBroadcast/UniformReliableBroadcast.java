@@ -47,6 +47,6 @@ public class UniformReliableBroadcast {
         bestEffortBroadcast.Broadcast(message, originalProcessId, originalMessageId, ProtocolTypeEnum.UniformReliableBroadcast);
     }
     public void Deliver(int port, InetAddress address, int messageId, int content) throws IOException {
-        bestEffortBroadcast.Deliver(port, address, messageId, content);
+        //bestEffortBroadcast.Deliver(port, address, messageId, content);
     }
 }

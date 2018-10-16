@@ -21,16 +21,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Listener {
-    public static HashSet<Message> receivedMessages;
     DatagramSocket socketIn;
     PerfectLink perfectLink;
-
+    BestEffortBroadcast bestEffortBroadcast;
 
     public MessageHandler onMessageReceive;
 
     public Listener() {
-        receivedMessages = new HashSet<>();
+        System.out.println("Listening ...");
         perfectLink = new PerfectLink();
+        bestEffortBroadcast = new BestEffortBroadcast();
     }
 
     public void Start() throws IOException {
@@ -41,7 +41,7 @@ public class Listener {
         byte[] messageReceived;
         int portReceived;
 
-        perfectLink.onMessageReceive = onMessageReceive;
+        //perfectLink.onMessageReceive = onMessageReceive;
         ExecutorService threadPool = Executors.newCachedThreadPool();
 
         while (true) {
@@ -77,52 +77,45 @@ public class Listener {
 
             int[] messageArray = new int[intBuf.remaining()];
             intBuf.get(messageArray);
+
+            //PRE PROCESSING THE MESSAGE
             int messageId = messageArray[0];
             int protocol = messageArray[1];
             int content = messageArray[2];
             int processId = messageArray[3];
+            Message message = new Message(messageId, processId);
 
-            Message message = null;
-            if(protocol == ProtocolTypeEnum.UniformReliableBroadcast.ordinal())
-            {
-                int originalProcessId = messageArray[4];
-                int originalMessageId = messageArray[5];
-                message = new Message(originalMessageId, originalProcessId);
-            }
-            else {
-                message = new Message(messageId, processId);
-            }
-            boolean duplicated;
-            if (receivedMessages.contains(message)) {
-                System.out.println("Message #" + messageId + ": " + content + " duplicate");
-                duplicated = true;
-            } else {
-                System.out.println("Message #" + messageId + ": " + content + " is delivered");
-                receivedMessages.add(message);
-                //System.out.println(receivedMessages.size());
-                duplicated= false;
-            }
+            //
+
+            // DELIVER MESSAGE ACCORDING TO PROTOCOLS
             try {
+                boolean delivered = false;
                 if (protocol == ProtocolTypeEnum.PerfectLink.ordinal()) {
-                    perfectLink.Deliver(portReceived, addressReceived, messageId, content);
+                    System.out.println("perfectlink receives");
+                    delivered = perfectLink.Deliver(message, content, portReceived, addressReceived);
                 }
                 else if (protocol == ProtocolTypeEnum.BestEffortBroadcast.ordinal()) {
-                    BestEffortBroadcast bestEffortBroadcast = new BestEffortBroadcast();
-                    bestEffortBroadcast.Deliver(portReceived, addressReceived, messageId, content);
+                    delivered = bestEffortBroadcast.Deliver(message, content, portReceived, addressReceived);
                 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                 else if (protocol == ProtocolTypeEnum.UniformReliableBroadcast.ordinal()) {
-                    UniformReliableBroadcast uniformReliableBroadcast = new UniformReliableBroadcast();
-                    uniformReliableBroadcast.Deliver(portReceived, addressReceived, messageId, content);
-                    if(!duplicated) {
-                        int originalProcessId = messageArray[4];
-                        int originalMessageId = messageArray[5];
-
-                        uniformReliableBroadcast.onMessageReceive = (x) -> {
-                            onMessageReceive.handle(x);
-                        };
-                        uniformReliableBroadcast.Broadcast(content, originalProcessId, originalMessageId);
-                    }
-
+                    int originalProcessId = messageArray[4];
+                    int originalMessageId = messageArray[5];
+                    Message message2 = new Message(originalMessageId, originalProcessId);
                 } else {
                     System.out.println("Unknown protocol " + protocol);
                     return;

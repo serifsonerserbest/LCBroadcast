@@ -1,12 +1,21 @@
 package com.epfl.da.Models;
 
 public class Message{
-    int messageId;
-    int processId;
+    private int messageId;
+    private int processId;
     public Message(int messageId, int processId) {
         this.messageId = messageId;
         this.processId = processId;
     }
+
+    public int getMessageId(){
+        return messageId;
+    }
+
+    public int getProcessId(){
+        return processId;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

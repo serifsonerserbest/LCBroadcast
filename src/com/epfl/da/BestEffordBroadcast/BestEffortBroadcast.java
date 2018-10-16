@@ -50,12 +50,13 @@ public class BestEffortBroadcast {
 
     public void Broadcast(int message, ProtocolTypeEnum protocol)
     {
-        var id = SendEvent.NextId();
-        Listener.receivedMessages.add(new Message(id, Process.getInstance().Id));
-        Broadcast(message, Process.getInstance().Id, id, protocol, id);
+        //var id = SendEvent.NextId();
+        //Listener.receivedMessages.add(new Message(id, Process.getInstance().Id));
+        //Broadcast(message, Process.getInstance().Id, id, protocol, id);
     }
-    public void Deliver(int port, InetAddress address, int messageId, int content) throws IOException {
-       perfectlink.Deliver(port, address, messageId, content);
+
+    public boolean Deliver(Message message, int content, int portReceived, InetAddress addressReceived) throws IOException {
+       return perfectlink.Deliver(message, content, portReceived, addressReceived);
     }
 }
 
