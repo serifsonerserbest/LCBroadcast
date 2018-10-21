@@ -14,7 +14,6 @@ import java.util.ArrayList;
 
 public class Process {
 
-
     private static final Process process = new Process();
     public int Id;
     public int Port;
@@ -69,7 +68,6 @@ public class Process {
             if(Integer.parseInt(splitted[0]) == Id)
             {
                 Port = Integer.parseInt(splitted[2]);
-                continue;
             }
             processes.add(new ProcessModel(Integer.parseInt(splitted[0]), InetAddress.getByName(splitted[1]), Integer.parseInt(splitted[2])));
         }

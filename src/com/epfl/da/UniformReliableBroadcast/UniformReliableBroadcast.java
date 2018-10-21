@@ -4,12 +4,15 @@ import com.epfl.da.BestEffordBroadcast.BestEffortBroadcast;
 import com.epfl.da.Enums.ProtocolTypeEnum;
 import com.epfl.da.Interfaces.BaseHandler;
 import com.epfl.da.Interfaces.MessageHandler;
+import com.epfl.da.Models.Message;
 import com.epfl.da.PerfectLink.PerfectLink;
 import com.epfl.da.PerfectLink.SendEvent;
 import com.epfl.da.Process;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.HashMap;
+import java.util.HashSet;
 
 public class UniformReliableBroadcast {
     private BestEffortBroadcast bestEffortBroadcast;
@@ -18,35 +21,54 @@ public class UniformReliableBroadcast {
     int processesReceivedMessage = 0;
     boolean isHandlerCalled = false;
 
+    private HashMap<Message, Integer> ack;
+    private HashSet<Message> delivered;
+    private HashSet<Message> forward;
+
+
     public UniformReliableBroadcast()
     {
         bestEffortBroadcast = new BestEffortBroadcast();
+        ack = new HashMap<Message, Integer>();
+        delivered = new HashSet<Message>();
+        forward = new HashSet<Message>();
+
     }
-    public void Broadcast(int message){
-        receiveAcknowledgeHandler = ()->{
-            ++processesReceivedMessage;
-            if(processesReceivedMessage >= Process.getInstance().processes.size() / 2 && !isHandlerCalled)
-            {
-                isHandlerCalled = true;
-                onMessageReceive.handle(message);
+    public void Broadcast(int content){
+        System.out.println("URB Broadcasting..");
+        int messageId = SendEvent.NextId();
+        int processId = Process.getInstance().Id;
+        Message message = new Message(messageId, processId);
+        forward.add(message);
+        bestEffortBroadcast.Broadcast(content, processId, messageId, ProtocolTypeEnum.UniformReliableBroadcast, messageId);
+    }
+
+    public boolean Deliver(Message message, Message originalMessage, int content, int portReceived, InetAddress addressReceived) throws IOException {
+
+        if(bestEffortBroadcast.Deliver(message, content, portReceived, addressReceived)){
+
+            int count = ack.getOrDefault(originalMessage,0);
+            ack.put(originalMessage, count + 1);
+
+            if(!forward.contains(originalMessage)){
+                forward.add(originalMessage);
+                bestEffortBroadcast.Broadcast(content,originalMessage.getProcessId(), originalMessage.getMessageId(),
+                        ProtocolTypeEnum.UniformReliableBroadcast, message.getMessageId());
             }
-        };
-        bestEffortBroadcast.receiveAcknowledgeHandler = receiveAcknowledgeHandler;
-        bestEffortBroadcast.Broadcast(message, ProtocolTypeEnum.UniformReliableBroadcast);
-    }
-    public void Broadcast(int message, int originalProcessId, int originalMessageId ) {
-        receiveAcknowledgeHandler = ()->{
-            ++processesReceivedMessage;
-            if(processesReceivedMessage >= Process.getInstance().processes.size() / 2 && !isHandlerCalled)
-            {
-                isHandlerCalled = true;
-                onMessageReceive.handle(message);
+        }
+        if(forward.contains(originalMessage)){
+            if(canDeliver(originalMessage) && !delivered.contains(originalMessage)){
+                delivered.add(originalMessage);
+                System.out.println("URB Delivering..");
+                return true;
             }
-        };
-        bestEffortBroadcast.receiveAcknowledgeHandler = receiveAcknowledgeHandler;
-        bestEffortBroadcast.Broadcast(message, originalProcessId, originalMessageId, ProtocolTypeEnum.UniformReliableBroadcast);
+        }
+        return false;
     }
-    public void Deliver(int port, InetAddress address, int messageId, int content) throws IOException {
-        bestEffortBroadcast.Deliver(port, address, messageId, content);
+
+    public boolean canDeliver(Message originalMessage){
+        int numOfProc = Process.getInstance().processes.size();
+        int count = ack.getOrDefault(originalMessage,0);
+        return count > numOfProc / 2;
     }
 }

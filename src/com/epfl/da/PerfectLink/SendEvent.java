@@ -26,14 +26,14 @@ public class SendEvent {
        return ++messageId;
     }
 
-    public void SendMessage(int message, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int messageId)
+    public void SendMessage(int content, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int messageId)
     {
         DatagramSocket socketOut;
 
         try {
             socketOut = new DatagramSocket();                // outgoing channel
             socketOut.setSoTimeout(timeoutVal);
-             service.submit(new ThreadSend(socketOut, destPort, destAddress, message, messageId, protocol, originalProcessId, originalMessageId));
+             service.submit(new ThreadSend(socketOut, destPort, destAddress, content, messageId, protocol, originalProcessId, originalMessageId));
 
             //ThreadSend th_out = new ThreadSend(socketOut, destPort, destAddress, message, messageId, receiveAcknowledgeHandler);
             //th_out.start();
@@ -95,7 +95,7 @@ public class SendEvent {
             int counter = 0;
             while(attempts == -1 || counter <  attempts) {
                 socketOut.send(sendingPacket);
-                System.out.println("SendEvent: Sent " + messageId);
+                System.out.println("SendEvent: Sent, Message Id:" + messageId);
                 try {
                     socketOut.receive(receivePacket);
                     ByteBuffer wrapped = ByteBuffer.wrap(receivePacket.getData()); // big-endian by default
