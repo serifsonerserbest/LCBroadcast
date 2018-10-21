@@ -27,23 +27,22 @@ public class PerfectLink {
     }
 
     /** For PerfectLink */
-    public void Send(int message, InetAddress destAddress, int destPort){
+    public void Send(int content, InetAddress destAddress, int destPort){
         var id = SendEvent.NextId();
-        sendEvent.SendMessage(message, destAddress, destPort, ProtocolTypeEnum.PerfectLink, 0 , 0, id);
+        sendEvent.SendMessage(content, destAddress, destPort, ProtocolTypeEnum.PerfectLink, 0 , 0, id);
     }
 
-    public void Send(int message, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int messageId){
-        sendEvent.SendMessage(message, destAddress, destPort, protocol, 0 , 0, messageId);
+    /** For BestEffordBroadcast */
+    public void Send(int content, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int messageId){
+        sendEvent.SendMessage(content, destAddress, destPort, protocol, 0 , 0, messageId);
     }
     /** For UniformReliableBroadcast */
-    public void Send(int message, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int messageId){
-        sendEvent.receiveAcknowledgeHandler = receiveAcknowledgeHandler;
-        sendEvent.SendMessage(message, destAddress, destPort, protocol, originalProcessId, originalMessageId, messageId );
+    public void Send(int content, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int messageId){
+        sendEvent.SendMessage(content, destAddress, destPort, protocol, originalProcessId, originalMessageId, messageId );
     }
 
     public boolean Deliver(Message message, int content, int port, InetAddress address) throws IOException {
 
-        System.out.println("perfect link processess..");
         if (receivedMessages.contains(message)) {
             System.out.println("Message #" + message.getMessageId() + ": " + content + " duplicate");
         } else {

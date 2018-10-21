@@ -24,13 +24,15 @@ public class Listener {
     DatagramSocket socketIn;
     PerfectLink perfectLink;
     BestEffortBroadcast bestEffortBroadcast;
+    UniformReliableBroadcast uniformReliableBroadcast;
 
     public MessageHandler onMessageReceive;
 
-    public Listener() {
+    public Listener(PerfectLink perfectLink, BestEffortBroadcast bestEffortBroadcast, UniformReliableBroadcast uniformReliableBroadcast) {
         System.out.println("Listening ...");
-        perfectLink = new PerfectLink();
-        bestEffortBroadcast = new BestEffortBroadcast();
+        this.perfectLink = perfectLink;
+        this.bestEffortBroadcast = bestEffortBroadcast;
+        this.uniformReliableBroadcast = uniformReliableBroadcast;
     }
 
     public void Start() throws IOException {
@@ -97,26 +99,13 @@ public class Listener {
                 else if (protocol == ProtocolTypeEnum.BestEffortBroadcast.ordinal()) {
                     delivered = bestEffortBroadcast.Deliver(message, content, portReceived, addressReceived);
                 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
                 else if (protocol == ProtocolTypeEnum.UniformReliableBroadcast.ordinal()) {
                     int originalProcessId = messageArray[4];
                     int originalMessageId = messageArray[5];
-                    Message message2 = new Message(originalMessageId, originalProcessId);
-                } else {
+                    Message messageOriginal = new Message(originalMessageId, originalProcessId);
+                    delivered = uniformReliableBroadcast.Deliver(message, messageOriginal,content, portReceived, addressReceived);
+                }
+                else {
                     System.out.println("Unknown protocol " + protocol);
                     return;
                 }

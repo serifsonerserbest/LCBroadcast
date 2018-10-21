@@ -31,28 +31,13 @@ public class BestEffortBroadcast {
             perfectlink.Send(message, processes.get(i).address, processes.get(i).port, ProtocolTypeEnum.BestEffortBroadcast, id);
         }
     }
- /** For UniformReliableBroadcast */
-    private void Broadcast(int message, int originalProcessId, int originalMessageId, ProtocolTypeEnum protocol, int messageId )
-    {
-        perfectlink.receiveAcknowledgeHandler = receiveAcknowledgeHandler;
+    //** For UniformReliableBroadcast *//*
+    public void Broadcast(int content, int originalProcessId, int originalMessageId, ProtocolTypeEnum protocol, int messageId )
+    {   System.out.println("BEB Broadcasting...");
         var processes = Process.getInstance().processes;
         for (int i = 0; i < processes.size(); i++) {
-            perfectlink.Send(message, processes.get(i).address, processes.get(i).port, protocol, originalProcessId , originalMessageId, messageId);
+            perfectlink.Send(content, processes.get(i).address, processes.get(i).port, protocol, originalProcessId , originalMessageId, messageId);
         }
-    }
-
-    public void Broadcast(int message, int originalProcessId, int originalMessageId, ProtocolTypeEnum protocol)
-    {
-        var id = SendEvent.NextId();
-        Broadcast(message, originalProcessId, originalMessageId, protocol, id);
-    }
-
-
-    public void Broadcast(int message, ProtocolTypeEnum protocol)
-    {
-        //var id = SendEvent.NextId();
-        //Listener.receivedMessages.add(new Message(id, Process.getInstance().Id));
-        //Broadcast(message, Process.getInstance().Id, id, protocol, id);
     }
 
     public boolean Deliver(Message message, int content, int portReceived, InetAddress addressReceived) throws IOException {

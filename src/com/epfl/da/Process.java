@@ -14,7 +14,6 @@ import java.util.ArrayList;
 
 public class Process {
 
-
     private static final Process process = new Process();
     public int Id;
     public int Port;
