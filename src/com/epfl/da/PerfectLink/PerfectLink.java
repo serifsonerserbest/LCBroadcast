@@ -1,10 +1,7 @@
 package com.epfl.da.PerfectLink;
 
 import com.epfl.da.Enums.ProtocolTypeEnum;
-import com.epfl.da.Interfaces.BaseHandler;
-import com.epfl.da.Interfaces.MessageHandler;
 import com.epfl.da.Models.Message;
-import com.epfl.da.Process;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -16,9 +13,6 @@ public class PerfectLink {
     private DeliverEvent deliverEvent;
 
     private static HashSet<Message> receivedMessages;
-    public MessageHandler onMessageReceive;
-    public BaseHandler receiveAcknowledgeHandler;
-
 
     public PerfectLink() {
         sendEvent = new SendEvent();

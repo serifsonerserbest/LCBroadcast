@@ -15,9 +15,6 @@ import java.net.InetAddress;
 public class BestEffortBroadcast {
 
     private PerfectLink perfectlink;
-    public MessageHandler onMessageReceive;
-    public BaseHandler receiveAcknowledgeHandler;
-
 
     public BestEffortBroadcast(){
         perfectlink = new PerfectLink();
@@ -33,7 +30,8 @@ public class BestEffortBroadcast {
     }
     //** For UniformReliableBroadcast *//*
     public void Broadcast(int content, int originalProcessId, int originalMessageId, ProtocolTypeEnum protocol, int messageId )
-    {   System.out.println("BEB Broadcasting...");
+    {
+
         var processes = Process.getInstance().processes;
         for (int i = 0; i < processes.size(); i++) {
             perfectlink.Send(content, processes.get(i).address, processes.get(i).port, protocol, originalProcessId , originalMessageId, messageId);

@@ -1,6 +1,7 @@
 package com.epfl.da;
 
 import com.epfl.da.Models.ProcessModel;
+import com.epfl.da.UniformReliableBroadcast.UniformReliableBroadcast;
 import sun.misc.Signal;
 import sun.misc.SignalHandler;
 
@@ -10,13 +11,15 @@ import java.io.FileReader;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 public class Process {
 
-    private static final Process process = new Process();
+    private volatile static Process process = new Process();
     public int Id;
     public int Port;
+    public boolean Crashed = false;
 
     public Logger Logger;
     // todo change to hashset
@@ -28,12 +31,11 @@ public class Process {
         return process;
     }
 
-
-    public void Init(int id, String settingFileNAme)
+    public void Init(int id, String membership)
     {
         Id = id;
         Logger = new Logger(Id);
-        ReadSettingFile(settingFileNAme);
+        ReadSettingFile(membership);
         SetupSignalHandlers();
     }
 
@@ -49,47 +51,63 @@ public class Process {
 
     //region Private Methods
     private void SetupSignalHandlers(){
+        DiagnosticSignalHandler.install("STOP", GetStopHandler());
+        DiagnosticSignalHandler.install("CONT", GetContHandler());
         DiagnosticSignalHandler.install("TERM", GetTermHandler());
         DiagnosticSignalHandler.install("INT", GetIntHandler());
-        //DiagnosticSignalHandler.install("USR1", GetUsr1Handler());
+        DiagnosticSignalHandler.install("USR1", GetUsr1Handler());
     }
 
-    private void ReadSettingFile(String settingFileName){
-        BufferedReader buff = null;
-        try {
-            buff = new BufferedReader(new FileReader(settingFileName));
+    private void ReadSettingFile(String membership) {
 
-        String num = buff.readLine();
-        int processNum = Integer.parseInt(num);
-        for(int i = 0; i < processNum; i++)
-        {
-            String process = buff.readLine();
-            String [] splitted = process.split("\\s+");
-            if(Integer.parseInt(splitted[0]) == Id)
-            {
+        var splittedMem = membership.split("\n");
+        int processNum = Integer.parseInt(splittedMem[0]);
+        for (int i = 0; i < processNum; i++) {
+            String process = splittedMem[i + 1];
+            String[] splitted = process.split("\\s+");
+            if (Integer.parseInt(splitted[0]) == Id) {
                 Port = Integer.parseInt(splitted[2]);
             }
-            processes.add(new ProcessModel(Integer.parseInt(splitted[0]), InetAddress.getByName(splitted[1]), Integer.parseInt(splitted[2])));
-        }
-        } catch (Exception e) {
-            System.out.println("Exception while parsing file:" + e);
+            try {
+                processes.add(new ProcessModel(Integer.parseInt(splitted[0]), InetAddress.getByName(splitted[1]), Integer.parseInt(splitted[2])));
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+            }
+
         }
     }
     //endregion
 
     //region Signal Handlers
+    private SignalHandler GetStopHandler()
+    {
+        return sig -> {
+            System.out.println("STOP");
+            Crashed = true;
+        };
+    }
+
+    private SignalHandler GetContHandler()
+    {
+        return sig -> {
+            System.out.println("CONT");
+            Crashed = false;
+        };
+    }
+
     private SignalHandler GetTermHandler()
     {
          return sig -> {
-             System.out.println("Term");
+             System.out.println("TERM");
              Logger.WriteLogToFile();
              System.exit(-1);
          };
     }
+
     private SignalHandler GetIntHandler()
     {
         return sig -> {
-            System.out.println("Int");
+            System.out.println("INT");
             Logger.WriteLogToFile();
             System.exit(-1);
         };
@@ -97,7 +115,8 @@ public class Process {
     private SignalHandler GetUsr1Handler()
     {
         return sig -> {
-            System.out.println("Usr1");
+            System.out.println("USR1");
+            UniformReliableBroadcast.getInst().Broadcast(1);
         };
     }
     //endregion

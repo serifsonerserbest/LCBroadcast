@@ -25,8 +25,9 @@ public class UniformReliableBroadcast {
     private HashSet<Message> delivered;
     private HashSet<Message> forward;
 
+    private volatile static UniformReliableBroadcast uniformReliableBroadcast = new UniformReliableBroadcast();
 
-    public UniformReliableBroadcast()
+    private UniformReliableBroadcast()
     {
         bestEffortBroadcast = new BestEffortBroadcast();
         ack = new HashMap<Message, Integer>();
@@ -34,13 +35,20 @@ public class UniformReliableBroadcast {
         forward = new HashSet<Message>();
 
     }
+
+    public static UniformReliableBroadcast getInst(){
+        return uniformReliableBroadcast;
+    }
+
+
     public void Broadcast(int content){
-        System.out.println("URB Broadcasting..");
+        System.out.println("URB b " +  Process.getInstance().Id);
         int messageId = SendEvent.NextId();
         int processId = Process.getInstance().Id;
         Message message = new Message(messageId, processId);
         forward.add(message);
         bestEffortBroadcast.Broadcast(content, processId, messageId, ProtocolTypeEnum.UniformReliableBroadcast, messageId);
+        Process.getInstance().Logger.WriteToLog("b " +  Process.getInstance().Id);
     }
 
     public boolean Deliver(Message message, Message originalMessage, int content, int portReceived, InetAddress addressReceived) throws IOException {
@@ -59,7 +67,8 @@ public class UniformReliableBroadcast {
         if(forward.contains(originalMessage)){
             if(canDeliver(originalMessage) && !delivered.contains(originalMessage)){
                 delivered.add(originalMessage);
-                System.out.println("URB Delivering..");
+                System.out.println("URB: d " +  originalMessage.getProcessId() + " " + originalMessage.getMessageId());
+                Process.getInstance().Logger.WriteToLog("d " +  originalMessage.getProcessId() + " " + originalMessage.getMessageId());
                 return true;
             }
         }

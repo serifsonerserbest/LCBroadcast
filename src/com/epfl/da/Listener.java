@@ -50,6 +50,11 @@ public class Listener {
             //receiving packet
             DatagramPacket receivedPacket = new DatagramPacket(packetReceived, packetReceived.length);
             socketIn.receive(receivedPacket);
+
+            // CHECK -STOP SIGNAL
+            if(Process.getInstance().Crashed){
+                continue;
+            }
             addressReceived = receivedPacket.getAddress();
             portReceived = receivedPacket.getPort();
             messageReceived = receivedPacket.getData();

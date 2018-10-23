@@ -28,8 +28,12 @@ public class SendEvent {
 
     public void SendMessage(int content, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int messageId)
     {
-        DatagramSocket socketOut;
+        // CHECK -STOP SIGNAL
+        if(Process.getInstance().Crashed){
+            return;
+        }
 
+        DatagramSocket socketOut;
         try {
             socketOut = new DatagramSocket();                // outgoing channel
             socketOut.setSoTimeout(timeoutVal);
