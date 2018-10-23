@@ -19,7 +19,6 @@ public class Process {
     private volatile static Process process = new Process();
     public int Id;
     public int Port;
-    public boolean Crashed = false;
 
     public Logger Logger;
     // todo change to hashset
@@ -31,11 +30,11 @@ public class Process {
         return process;
     }
 
-    public void Init(int id, String membership)
+    public void Init(int id, String membershipFileName)
     {
         Id = id;
         Logger = new Logger(Id);
-        ReadSettingFile(membership);
+        ReadSettingFile(membershipFileName);
         SetupSignalHandlers();
     }
 
@@ -51,16 +50,34 @@ public class Process {
 
     //region Private Methods
     private void SetupSignalHandlers(){
-        DiagnosticSignalHandler.install("STOP", GetStopHandler());
-        DiagnosticSignalHandler.install("CONT", GetContHandler());
         DiagnosticSignalHandler.install("TERM", GetTermHandler());
         DiagnosticSignalHandler.install("INT", GetIntHandler());
         DiagnosticSignalHandler.install("USR1", GetUsr1Handler());
     }
 
-    private void ReadSettingFile(String membership) {
+    private void ReadSettingFile(String settingFileName){
 
-        var splittedMem = membership.split("\n");
+        BufferedReader buff = null;
+        try {
+            buff = new BufferedReader(new FileReader(settingFileName));
+
+            String num = buff.readLine();
+            int processNum = Integer.parseInt(num);
+            for(int i = 0; i < processNum; i++)
+            {
+                String process = buff.readLine();
+                String [] splitted = process.split("\\s+");
+                if(Integer.parseInt(splitted[0]) == Id)
+                {
+                    Port = Integer.parseInt(splitted[2]);
+                }
+                processes.add(new ProcessModel(Integer.parseInt(splitted[0]), InetAddress.getByName(splitted[1]), Integer.parseInt(splitted[2])));
+            }
+        } catch (Exception e) {
+            System.out.println("Exception while parsing file:" + e);
+        }
+      /*  var splittedMem = membership.split("\n");
+        System.out.println(splittedMem);
         int processNum = Integer.parseInt(splittedMem[0]);
         for (int i = 0; i < processNum; i++) {
             String process = splittedMem[i + 1];
@@ -74,26 +91,11 @@ public class Process {
                 e.printStackTrace();
             }
 
-        }
+        }*/
     }
     //endregion
 
     //region Signal Handlers
-    private SignalHandler GetStopHandler()
-    {
-        return sig -> {
-            System.out.println("STOP");
-            Crashed = true;
-        };
-    }
-
-    private SignalHandler GetContHandler()
-    {
-        return sig -> {
-            System.out.println("CONT");
-            Crashed = false;
-        };
-    }
 
     private SignalHandler GetTermHandler()
     {

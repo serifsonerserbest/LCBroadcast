@@ -39,7 +39,7 @@ public class BestEffortBroadcast {
     }
 
     public boolean Deliver(Message message, int content, int portReceived, InetAddress addressReceived) throws IOException {
-       return perfectlink.Deliver(message, content, portReceived, addressReceived);
+        return perfectlink.Deliver(message, content, portReceived, addressReceived);
     }
 }
 

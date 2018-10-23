@@ -2,6 +2,7 @@ package com.epfl.da.PerfectLink;
 
 import com.epfl.da.Enums.ProtocolTypeEnum;
 import com.epfl.da.Models.Message;
+import com.epfl.da.Process;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -38,9 +39,9 @@ public class PerfectLink {
     public boolean Deliver(Message message, int content, int port, InetAddress address) throws IOException {
 
         if (receivedMessages.contains(message)) {
-            System.out.println("Message #" + message.getMessageId() + ": " + content + " duplicate");
+            //System.out.println("Message #" + message.getMessageId() + ": " + content + " duplicate");
         } else {
-            System.out.println("Message #" + message.getMessageId() + ": " + content + " is delivered");
+            System.out.println("PL" + Process.getInstance().Id +"Message #" + message.getMessageId() + ": " + content + " is delivered");
             receivedMessages.add(message);
             deliverEvent.sendAck(port, address, message.getMessageId());
             return true;

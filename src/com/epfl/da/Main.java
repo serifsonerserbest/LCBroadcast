@@ -31,9 +31,9 @@ public class Main {
     public static void main(String[] args) throws InterruptedException, IOException {
 
         int processId = Integer.parseInt(args[0]);
-        String membership = args[1];
+        String membershipFileName = args[1];
 
-        Process.getInstance().Init(processId, membership);
+        Process.getInstance().Init(processId, membershipFileName);
 
         PerfectLink perfectLink = new PerfectLink();
         BestEffortBroadcast bestEffortBroadcast = new BestEffortBroadcast();
