@@ -24,7 +24,7 @@ public class BestEffortBroadcast {
     {
         var processes = Process.getInstance().processes;
         var id = SendEvent.NextId();
-        System.out.println("URB: " + Process.getInstance().Id + " Broadcast Message #" + id);
+        System.out.println("BEB: " + Process.getInstance().Id + " Broadcast Message #" + id);
         for (int i = 0; i < processes.size(); i++) {
             perfectlink.Send(message, processes.get(i).address, processes.get(i).port, ProtocolTypeEnum.BestEffortBroadcast, id);
         }

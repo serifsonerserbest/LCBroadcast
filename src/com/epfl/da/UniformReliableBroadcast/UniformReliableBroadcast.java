@@ -72,7 +72,7 @@ public class UniformReliableBroadcast {
         if(forward.contains(originalMessage)){
             if(canDeliver(originalMessage) && !delivered.contains(originalMessage)){
                 delivered.add(originalMessage);
-                System.out.println("URB: " + Process.getInstance().Id + " Message #" + message.getMessageId() + ":From Process: " + message.getProcessId() + " is delivered");
+                System.out.println("URB: " + Process.getInstance().Id + " Message #" + message.getMessageId() + ":From Process: " + originalMessage.getProcessId() + " is delivered");
                 Process.getInstance().Logger.WriteToLog("d " +  originalMessage.getProcessId() + " " + originalMessage.getMessageId());
                 return true;
             }
