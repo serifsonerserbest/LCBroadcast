@@ -28,10 +28,7 @@ public class SendEvent {
 
     public void SendMessage(int content, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int messageId)
     {
-        // CHECK -STOP SIGNAL
-        if(Process.getInstance().Crashed){
-            return;
-        }
+
 
         DatagramSocket socketOut;
         try {
@@ -99,7 +96,9 @@ public class SendEvent {
             int counter = 0;
             while(attempts == -1 || counter <  attempts) {
                 socketOut.send(sendingPacket);
+
                 //System.out.println("SendEvent: Sent, Message Id:" + messageId);
+
                 try {
                     socketOut.receive(receivePacket);
                     ByteBuffer wrapped = ByteBuffer.wrap(receivePacket.getData()); // big-endian by default

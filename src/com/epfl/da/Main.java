@@ -45,6 +45,7 @@ public class Main {
         int processId = 3;
         Process.getInstance().Init(processId, "membership.txt");
 
+
         PerfectLink perfectLink = new PerfectLink();
         BestEffortBroadcast bestEffortBroadcast = new BestEffortBroadcast();
         UniformReliableBroadcast uniformReliableBroadcast = UniformReliableBroadcast.getInst();

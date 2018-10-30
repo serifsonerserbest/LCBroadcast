@@ -52,9 +52,7 @@ public class Listener {
             socketIn.receive(receivedPacket);
 
             // CHECK -STOP SIGNAL
-            if(Process.getInstance().Crashed){
-                continue;
-            }
+
             addressReceived = receivedPacket.getAddress();
             portReceived = receivedPacket.getPort();
             messageReceived = receivedPacket.getData();

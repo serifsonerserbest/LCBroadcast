@@ -55,7 +55,9 @@ public class UniformReliableBroadcast {
     public boolean Deliver(Message message, Message originalMessage, int content, int portReceived, InetAddress addressReceived) throws IOException {
 
         if(bestEffortBroadcast.Deliver(message, content, portReceived, addressReceived)){
+
             System.out.println("BEB: " + Process.getInstance().Id + " Message #" + message.getMessageId() + ":From Process: " + message.getProcessId() + " is delivered");
+
 
             int count = ack.getOrDefault(originalMessage,0);
             ack.put(originalMessage, count + 1);

@@ -44,6 +44,7 @@ public class PerfectLink {
             //System.out.println("Message #" + message.getMessageId() + ": " + content + " duplicate");
         } else {
             System.out.println("PL: " + Process.getInstance().Id + " Message #" + message.getMessageId() + ":From Process: " + message.getProcessId() + " is delivered");
+
             receivedMessages.add(message);
             deliverEvent.sendAck(port, address, message.getMessageId());
             return true;
