@@ -2,18 +2,14 @@ package com.epfl.da.UniformReliableBroadcast;
 
 import com.epfl.da.BestEffordBroadcast.BestEffortBroadcast;
 import com.epfl.da.Enums.ProtocolTypeEnum;
-import com.epfl.da.Interfaces.BaseHandler;
-import com.epfl.da.Interfaces.MessageHandler;
 import com.epfl.da.Models.Message;
-import com.epfl.da.PerfectLink.PerfectLink;
 import com.epfl.da.PerfectLink.SendEvent;
 import com.epfl.da.Process;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.concurrent.locks.ReentrantLock;
+
 
 public class UniformReliableBroadcast {
     private BestEffortBroadcast bestEffortBroadcast;
@@ -39,15 +35,13 @@ public class UniformReliableBroadcast {
 
     public synchronized void Broadcast(int content){
         int messageId = SendEvent.NextId();
-
         int processId = Process.getInstance().Id;
         Message message = new Message(messageId, processId);
         forward.add(message);
+
         //System.out.println("URB: " + Process.getInstance().Id + " Broadcast Message #" + message.getMessageId());
 
         System.out.println("b " +  Process.getInstance().Id);
-
-
         bestEffortBroadcast.Broadcast(content, processId, messageId, ProtocolTypeEnum.UniformReliableBroadcast, messageId);
         Process.getInstance().Logger.WriteToLog("b " +  Process.getInstance().Id);
     }
@@ -63,11 +57,7 @@ public class UniformReliableBroadcast {
 
             if(!forward.contains(originalMessage)){
                 forward.add(originalMessage);
-
-
                 var id = SendEvent.NextId();
-
-
                 bestEffortBroadcast.Broadcast(content,originalMessage.getProcessId(), originalMessage.getMessageId(),
                         ProtocolTypeEnum.UniformReliableBroadcast, id);
             }
@@ -78,8 +68,10 @@ public class UniformReliableBroadcast {
                 //System.out.println("URB: " + Process.getInstance().Id + " Message #" + message.getMessageId() + ":From Process: " + originalMessage.getProcessId() + " is delivered");
 
                 System.out.println("d " +  originalMessage.getProcessId() + " " + originalMessage.getMessageId());
-
                 Process.getInstance().Logger.WriteToLog("d " +  originalMessage.getProcessId() + " " + originalMessage.getMessageId());
+
+                //For Debugging
+                //Process.getInstance().Logger.WriteToLog(Integer.toString(originalMessage.getMessageId()));
                 deliver = true;
             }
         }

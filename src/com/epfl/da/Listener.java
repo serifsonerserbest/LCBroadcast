@@ -2,7 +2,6 @@ package com.epfl.da;
 
 import com.epfl.da.BestEffordBroadcast.BestEffortBroadcast;
 import com.epfl.da.Enums.ProtocolTypeEnum;
-import com.epfl.da.Interfaces.BaseHandler;
 import com.epfl.da.Interfaces.MessageHandler;
 import com.epfl.da.Models.Message;
 import com.epfl.da.PerfectLink.PerfectLink;
@@ -16,7 +15,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
