@@ -15,9 +15,6 @@ import java.net.InetAddress;
 public class BestEffortBroadcast {
 
     private PerfectLink perfectlink;
-    public MessageHandler onMessageReceive;
-    public BaseHandler receiveAcknowledgeHandler;
-
 
     public BestEffortBroadcast(){
         perfectlink = new PerfectLink();
@@ -27,13 +24,15 @@ public class BestEffortBroadcast {
     {
         var processes = Process.getInstance().processes;
         var id = SendEvent.NextId();
+        System.out.println("BEB: " + Process.getInstance().Id + " Broadcast Message #" + id);
         for (int i = 0; i < processes.size(); i++) {
             perfectlink.Send(message, processes.get(i).address, processes.get(i).port, ProtocolTypeEnum.BestEffortBroadcast, id);
         }
     }
     //** For UniformReliableBroadcast *//*
     public void Broadcast(int content, int originalProcessId, int originalMessageId, ProtocolTypeEnum protocol, int messageId )
-    {   System.out.println("BEB Broadcasting...");
+    {
+
         var processes = Process.getInstance().processes;
         for (int i = 0; i < processes.size(); i++) {
             perfectlink.Send(content, processes.get(i).address, processes.get(i).port, protocol, originalProcessId , originalMessageId, messageId);
@@ -41,7 +40,7 @@ public class BestEffortBroadcast {
     }
 
     public boolean Deliver(Message message, int content, int portReceived, InetAddress addressReceived) throws IOException {
-       return perfectlink.Deliver(message, content, portReceived, addressReceived);
+        return perfectlink.Deliver(message, content, portReceived, addressReceived);
     }
 }
 

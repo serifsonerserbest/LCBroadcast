@@ -50,6 +50,9 @@ public class Listener {
             //receiving packet
             DatagramPacket receivedPacket = new DatagramPacket(packetReceived, packetReceived.length);
             socketIn.receive(receivedPacket);
+
+            // CHECK -STOP SIGNAL
+
             addressReceived = receivedPacket.getAddress();
             portReceived = receivedPacket.getPort();
             messageReceived = receivedPacket.getData();
@@ -93,7 +96,6 @@ public class Listener {
             try {
                 boolean delivered = false;
                 if (protocol == ProtocolTypeEnum.PerfectLink.ordinal()) {
-                    System.out.println("perfectlink receives");
                     delivered = perfectLink.Deliver(message, content, portReceived, addressReceived);
                 }
                 else if (protocol == ProtocolTypeEnum.BestEffortBroadcast.ordinal()) {

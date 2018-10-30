@@ -28,8 +28,9 @@ public class SendEvent {
 
     public void SendMessage(int content, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int messageId)
     {
-        DatagramSocket socketOut;
 
+
+        DatagramSocket socketOut;
         try {
             socketOut = new DatagramSocket();                // outgoing channel
             socketOut.setSoTimeout(timeoutVal);
@@ -84,7 +85,7 @@ public class SendEvent {
                 e.printStackTrace();
             } finally {
                 socketOut.close();        // close outgoing socket
-                System.out.println("SendEvent: socketOut closed!");
+                //System.out.println("SendEvent: socketOut closed!");
             }
             if(receiveAcknowledgeHandler != null && result) {
                 receiveAcknowledgeHandler.handle();
@@ -95,12 +96,14 @@ public class SendEvent {
             int counter = 0;
             while(attempts == -1 || counter <  attempts) {
                 socketOut.send(sendingPacket);
-                System.out.println("SendEvent: Sent, Message Id:" + messageId);
+
+                //System.out.println("SendEvent: Sent, Message Id:" + messageId);
+
                 try {
                     socketOut.receive(receivePacket);
                     ByteBuffer wrapped = ByteBuffer.wrap(receivePacket.getData()); // big-endian by default
                     int messageId = wrapped.getInt();
-                    System.out.println("SendEvent: Received Ack " + messageId);
+                    //System.out.println("SendEvent: Received Ack " + messageId);
                     if (this.messageId == messageId) {
                         return true;
                     }

@@ -15,13 +15,25 @@ import java.util.ArrayList;
 public class Main {
 
     private static void TestSendPL(PerfectLink perfectLink) throws UnknownHostException {
-        for (int x = 0; x < 2; x++){
+        for (int x = 0; x < 10; x++){
             perfectLink.Send(x, InetAddress.getByName("127.0.0.1"), 20001);
         }
     }
 
     private static void TestSendBE(BestEffortBroadcast bestEffortBroadcast) throws UnknownHostException {
-        bestEffortBroadcast.Broadcast(1);
+        bestEffortBroadcast.Broadcast(10);
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        bestEffortBroadcast.Broadcast(10);
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        bestEffortBroadcast.Broadcast(10);
     }
 
     private static void TestSendUR(UniformReliableBroadcast uniformReliableBroadcast) throws UnknownHostException {
@@ -30,14 +42,13 @@ public class Main {
 
     public static void main(String[] args) throws InterruptedException, IOException {
 
-        ArrayList<InetSocketAddress> adr = new  ArrayList<InetSocketAddress>();
-        //adr.add(new InetSocketAddress(Inet4Address.getByName("127.0.0.1"),20003));
+        int processId = 3;
+        Process.getInstance().Init(processId, "membership.txt");
 
-        Process.getInstance().Init(3, "membership.txt");
 
         PerfectLink perfectLink = new PerfectLink();
         BestEffortBroadcast bestEffortBroadcast = new BestEffortBroadcast();
-        UniformReliableBroadcast uniformReliableBroadcast = new UniformReliableBroadcast();
+        UniformReliableBroadcast uniformReliableBroadcast = UniformReliableBroadcast.getInst();
 
         /*long startTime = System.currentTimeMillis();
 
@@ -62,16 +73,19 @@ public class Main {
             }
         }).start();
 
-        Thread.sleep(1000);
+        Thread.sleep(20000);
 
         //TestSendPL(perfectLink);
         //TestSendBE(bestEffortBroadcast);
         TestSendUR(uniformReliableBroadcast);
 
         while(true){
-            Thread.sleep(10000);
+            Thread.sleep(1000);
         }
 
 
     }
+
+
+
 }
