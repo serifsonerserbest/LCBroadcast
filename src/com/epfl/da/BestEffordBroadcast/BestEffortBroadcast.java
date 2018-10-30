@@ -24,6 +24,7 @@ public class BestEffortBroadcast {
     {
         var processes = Process.getInstance().processes;
         var id = SendEvent.NextId();
+        System.out.println("URB: " + Process.getInstance().Id + " Broadcast Message #" + id);
         for (int i = 0; i < processes.size(); i++) {
             perfectlink.Send(message, processes.get(i).address, processes.get(i).port, ProtocolTypeEnum.BestEffortBroadcast, id);
         }
@@ -39,7 +40,7 @@ public class BestEffortBroadcast {
     }
 
     public boolean Deliver(Message message, int content, int portReceived, InetAddress addressReceived) throws IOException {
-       return perfectlink.Deliver(message, content, portReceived, addressReceived);
+        return perfectlink.Deliver(message, content, portReceived, addressReceived);
     }
 }
 

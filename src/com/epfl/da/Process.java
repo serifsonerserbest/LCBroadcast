@@ -51,29 +51,32 @@ public class Process {
 
     //region Private Methods
     private void SetupSignalHandlers(){
-        DiagnosticSignalHandler.install("STOP", GetStopHandler());
-        DiagnosticSignalHandler.install("CONT", GetContHandler());
-        DiagnosticSignalHandler.install("TERM", GetTermHandler());
-        DiagnosticSignalHandler.install("INT", GetIntHandler());
-        DiagnosticSignalHandler.install("USR1", GetUsr1Handler());
+//        DiagnosticSignalHandler.install("STOP", GetStopHandler());
+//        DiagnosticSignalHandler.install("CONT", GetContHandler());
+//        DiagnosticSignalHandler.install("TERM", GetTermHandler());
+//        DiagnosticSignalHandler.install("INT", GetIntHandler());
+//        DiagnosticSignalHandler.install("USR1", GetUsr1Handler());
     }
 
-    private void ReadSettingFile(String membership) {
+    private void ReadSettingFile(String settingFileName){
+        BufferedReader buff = null;
+        try {
+            buff = new BufferedReader(new FileReader(settingFileName));
 
-        var splittedMem = membership.split("\n");
-        int processNum = Integer.parseInt(splittedMem[0]);
-        for (int i = 0; i < processNum; i++) {
-            String process = splittedMem[i + 1];
-            String[] splitted = process.split("\\s+");
-            if (Integer.parseInt(splitted[0]) == Id) {
-                Port = Integer.parseInt(splitted[2]);
-            }
-            try {
+            String num = buff.readLine();
+            int processNum = Integer.parseInt(num);
+            for(int i = 0; i < processNum; i++)
+            {
+                String process = buff.readLine();
+                String [] splitted = process.split("\\s+");
+                if(Integer.parseInt(splitted[0]) == Id)
+                {
+                    Port = Integer.parseInt(splitted[2]);
+                }
                 processes.add(new ProcessModel(Integer.parseInt(splitted[0]), InetAddress.getByName(splitted[1]), Integer.parseInt(splitted[2])));
-            } catch (UnknownHostException e) {
-                e.printStackTrace();
             }
-
+        } catch (Exception e) {
+            System.out.println("Exception while parsing file:" + e);
         }
     }
     //endregion

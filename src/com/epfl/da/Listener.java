@@ -98,7 +98,6 @@ public class Listener {
             try {
                 boolean delivered = false;
                 if (protocol == ProtocolTypeEnum.PerfectLink.ordinal()) {
-                    System.out.println("perfectlink receives");
                     delivered = perfectLink.Deliver(message, content, portReceived, addressReceived);
                 }
                 else if (protocol == ProtocolTypeEnum.BestEffortBroadcast.ordinal()) {

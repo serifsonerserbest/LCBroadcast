@@ -2,6 +2,7 @@ package com.epfl.da.PerfectLink;
 
 import com.epfl.da.Enums.ProtocolTypeEnum;
 import com.epfl.da.Models.Message;
+import com.epfl.da.Process;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -23,6 +24,7 @@ public class PerfectLink {
     /** For PerfectLink */
     public void Send(int content, InetAddress destAddress, int destPort){
         var id = SendEvent.NextId();
+        System.out.println("PL: " + Process.getInstance().Id + " Message #" + id + " is sent");
         sendEvent.SendMessage(content, destAddress, destPort, ProtocolTypeEnum.PerfectLink, 0 , 0, id);
     }
 
@@ -32,15 +34,16 @@ public class PerfectLink {
     }
     /** For UniformReliableBroadcast */
     public void Send(int content, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int messageId){
+        System.out.println("PL: " + Process.getInstance().Id + " Message #" + messageId + " is sent");
         sendEvent.SendMessage(content, destAddress, destPort, protocol, originalProcessId, originalMessageId, messageId );
     }
 
     public boolean Deliver(Message message, int content, int port, InetAddress address) throws IOException {
 
         if (receivedMessages.contains(message)) {
-            System.out.println("Message #" + message.getMessageId() + ": " + content + " duplicate");
+            //System.out.println("Message #" + message.getMessageId() + ": " + content + " duplicate");
         } else {
-            System.out.println("Message #" + message.getMessageId() + ": " + content + " is delivered");
+            System.out.println("PL: " + Process.getInstance().Id + " Message #" + message.getMessageId() + ":From Process: " + message.getProcessId() + " is delivered");
             receivedMessages.add(message);
             deliverEvent.sendAck(port, address, message.getMessageId());
             return true;
