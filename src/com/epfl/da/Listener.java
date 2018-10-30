@@ -51,15 +51,12 @@ public class Listener {
             DatagramPacket receivedPacket = new DatagramPacket(packetReceived, packetReceived.length);
             socketIn.receive(receivedPacket);
 
-            // CHECK -STOP SIGNAL
-
             addressReceived = receivedPacket.getAddress();
             portReceived = receivedPacket.getPort();
             messageReceived = receivedPacket.getData();
 
             threadPool.submit(new RequestProcessing(Arrays.copyOf(messageReceived, messageReceived.length), portReceived, InetAddress.getByName(addressReceived.getHostAddress())));
         }
-
     }
 
     public class RequestProcessing implements Runnable {

@@ -10,6 +10,8 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.locks.ReentrantLock;
+
 
 public class SendEvent {
 
@@ -18,17 +20,17 @@ public class SendEvent {
 
     public BaseHandler receiveAcknowledgeHandler;
     static ExecutorService service = Executors.newCachedThreadPool();
+
     public SendEvent() {
     }
 
-    public static int NextId()
+    public static synchronized int NextId()
     {
        return ++messageId;
     }
 
-    public void SendMessage(int content, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int messageId)
+    public synchronized void SendMessage(int content, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int messageId)
     {
-
 
         DatagramSocket socketOut;
         try {
@@ -92,7 +94,7 @@ public class SendEvent {
             }
         }
 
-        private boolean SendMessage(DatagramPacket sendingPacket, DatagramPacket receivePacket, int attempts) throws IOException {
+        private synchronized boolean SendMessage(DatagramPacket sendingPacket, DatagramPacket receivePacket, int attempts) throws IOException {
             int counter = 0;
             while(attempts == -1 || counter <  attempts) {
                 socketOut.send(sendingPacket);
@@ -115,7 +117,7 @@ public class SendEvent {
             return false;
         }
 
-        private boolean SendDataMessage(DatagramPacket sendingPacket, DatagramPacket receivePacket) throws IOException {
+        private synchronized boolean SendDataMessage(DatagramPacket sendingPacket, DatagramPacket receivePacket) throws IOException {
             return SendMessage(sendingPacket,receivePacket, -1);
         }
     }

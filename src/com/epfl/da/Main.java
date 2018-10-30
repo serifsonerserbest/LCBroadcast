@@ -37,14 +37,15 @@ public class Main {
     }
 
     private static void TestSendUR(UniformReliableBroadcast uniformReliableBroadcast) throws UnknownHostException {
-        uniformReliableBroadcast.Broadcast(1);
+        for (int x = 0; x < 1000; x++){
+            uniformReliableBroadcast.Broadcast(1);
+        }
     }
 
     public static void main(String[] args) throws InterruptedException, IOException {
 
-        int processId = 3;
+        int processId = 1;
         Process.getInstance().Init(processId, "membership.txt");
-
 
         PerfectLink perfectLink = new PerfectLink();
         BestEffortBroadcast bestEffortBroadcast = new BestEffortBroadcast();
@@ -82,10 +83,5 @@ public class Main {
         while(true){
             Thread.sleep(1000);
         }
-
-
     }
-
-
-
 }
