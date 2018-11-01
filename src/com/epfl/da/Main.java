@@ -5,12 +5,8 @@ import com.epfl.da.PerfectLink.PerfectLink;
 import com.epfl.da.UniformReliableBroadcast.UniformReliableBroadcast;
 
 import java.io.IOException;
-import java.net.Inet4Address;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-
 
 public class Main {
 
@@ -37,7 +33,9 @@ public class Main {
     }
 
     private static void TestSendUR(UniformReliableBroadcast uniformReliableBroadcast) throws UnknownHostException {
-        uniformReliableBroadcast.Broadcast(1);
+        for (int x = 0; x < 10000; x++){
+            uniformReliableBroadcast.Broadcast(1);
+        }
     }
 
     public static void main(String[] args) throws InterruptedException, IOException {
@@ -46,7 +44,6 @@ public class Main {
         String membershipFileName = args[1];
 
         Process.getInstance().Init(processId, membershipFileName);
-
 
         PerfectLink perfectLink = new PerfectLink();
         BestEffortBroadcast bestEffortBroadcast = new BestEffortBroadcast();
@@ -81,13 +78,12 @@ public class Main {
         //TestSendBE(bestEffortBroadcast);
         //TestSendUR(uniformReliableBroadcast);
 
+        Thread.sleep(100000);
+        Process.getInstance().Logger.WriteLogToFile();
+        System.out.println("Log File created");
+
         while(true){
             Thread.sleep(1000);
         }
-
-
     }
-
-
-
 }
