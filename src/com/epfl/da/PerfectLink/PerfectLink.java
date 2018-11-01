@@ -23,7 +23,7 @@ public class PerfectLink {
 
     /** For PerfectLink */
     public void Send(int content, InetAddress destAddress, int destPort){
-        var id = SendEvent.NextId();
+        int id = SendEvent.NextId();
         System.out.println("PL: " + Process.getInstance().Id + " Message #" + id + " is sent");
         sendEvent.SendMessage(content, destAddress, destPort, ProtocolTypeEnum.PerfectLink, 0 , 0, id);
     }

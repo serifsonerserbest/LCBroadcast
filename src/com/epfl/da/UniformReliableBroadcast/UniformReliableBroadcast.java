@@ -64,7 +64,7 @@ public class UniformReliableBroadcast {
 
             if(!forward.contains(originalMessage)){
                 forward.add(originalMessage);
-                var id = SendEvent.NextId();
+                int id = SendEvent.NextId();
                 bestEffortBroadcast.Broadcast(content,originalMessage.getProcessId(), originalMessage.getMessageId(),
                         ProtocolTypeEnum.UniformReliableBroadcast, id);
             }

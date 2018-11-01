@@ -2,7 +2,6 @@ package com.epfl.da;
 
 import com.epfl.da.Models.ProcessModel;
 import com.epfl.da.UniformReliableBroadcast.UniformReliableBroadcast;
-import sun.misc.Signal;
 import sun.misc.SignalHandler;
 
 import java.io.BufferedReader;
@@ -40,7 +39,7 @@ public class Process {
 
     public ProcessModel GetProcessById(int id){
         for (int i = 0; i < processes.size(); i++) {
-            var currentProcess = processes.get(i);
+            ProcessModel currentProcess = processes.get(i);
             if(currentProcess.id == id) {
                 return currentProcess;
             }
@@ -51,9 +50,9 @@ public class Process {
     //region Private Methods
     private void SetupSignalHandlers(){
 
-//        DiagnosticSignalHandler.install("TERM", GetTermHandler());
-//        DiagnosticSignalHandler.install("INT", GetIntHandler());
-//        DiagnosticSignalHandler.install("USR1", GetUsr1Handler());
+       DiagnosticSignalHandler.install("TERM", GetTermHandler());
+       DiagnosticSignalHandler.install("INT", GetIntHandler());
+        DiagnosticSignalHandler.install("USR2", GetUsr1Handler());
     }
 
     private void ReadSettingFile(String settingFileName){
@@ -117,7 +116,7 @@ public class Process {
     private SignalHandler GetUsr1Handler()
     {
         return sig -> {
-            System.out.println("USR1");
+            System.out.println("USR2");
             UniformReliableBroadcast.getInst().Broadcast(1);
         };
     }

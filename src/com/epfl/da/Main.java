@@ -42,8 +42,10 @@ public class Main {
 
     public static void main(String[] args) throws InterruptedException, IOException {
 
-        int processId = 3;
-        Process.getInstance().Init(processId, "membership.txt");
+        int processId = Integer.parseInt(args[0]);
+        String membershipFileName = args[1];
+
+        Process.getInstance().Init(processId, membershipFileName);
 
 
         PerfectLink perfectLink = new PerfectLink();
@@ -73,11 +75,11 @@ public class Main {
             }
         }).start();
 
-        Thread.sleep(20000);
+        //Thread.sleep(20000);
 
         //TestSendPL(perfectLink);
         //TestSendBE(bestEffortBroadcast);
-        TestSendUR(uniformReliableBroadcast);
+        //TestSendUR(uniformReliableBroadcast);
 
         while(true){
             Thread.sleep(1000);
