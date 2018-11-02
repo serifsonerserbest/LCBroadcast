@@ -1,12 +1,14 @@
-package com.epfl.da;
+package Process;
 
-import com.epfl.da.Models.ProcessModel;
-import com.epfl.da.UniformReliableBroadcast.UniformReliableBroadcast;
+import Models.ProcessModel;
+import UniformReliableBroadcast.UniformReliableBroadcast;
 import sun.misc.SignalHandler;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import Logger.Logger;
+import SignalHandler.DiagnosticSignalHandler;
 
 public class Process {
 

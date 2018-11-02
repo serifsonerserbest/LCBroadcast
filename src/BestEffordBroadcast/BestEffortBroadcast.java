@@ -1,11 +1,11 @@
-package com.epfl.da.BestEffordBroadcast;
+package BestEffordBroadcast;
 
-import com.epfl.da.Enums.ProtocolTypeEnum;
-import com.epfl.da.Models.Message;
-import com.epfl.da.Models.ProcessModel;
-import com.epfl.da.PerfectLink.PerfectLink;
-import com.epfl.da.PerfectLink.SendEvent;
-import com.epfl.da.Process;
+import Enums.ProtocolTypeEnum;
+import Models.Message;
+import Models.ProcessModel;
+import PerfectLink.PerfectLink;
+import PerfectLink.SendEvent;
+import Process.Process;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -24,7 +24,7 @@ public class BestEffortBroadcast {
     {
         ArrayList<ProcessModel> processes = Process.getInstance().processes;
         int id = SendEvent.NextId();
-        //System.out.println("URB: " + Process.getInstance().Id + " Broadcast Message #" + id);
+        //System.out.println("URB: " + Process.Process.getInstance().Id + " Broadcast Message #" + id);
         for (int i = 0; i < processes.size(); i++) {
             perfectlink.Send(message, processes.get(i).address, processes.get(i).port, ProtocolTypeEnum.BestEffortBroadcast, id);
         }

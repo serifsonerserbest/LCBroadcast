@@ -1,8 +1,8 @@
-package com.epfl.da.PerfectLink;
+package PerfectLink;
 
-import com.epfl.da.Enums.ProtocolTypeEnum;
-import com.epfl.da.Interfaces.BaseHandler;
-import com.epfl.da.Process;
+import Enums.ProtocolTypeEnum;
+import Interfaces.BaseHandler;
+import Process.Process;
 
 import java.io.IOException;
 import java.net.*;

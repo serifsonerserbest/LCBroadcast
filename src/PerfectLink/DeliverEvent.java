@@ -1,4 +1,4 @@
-package com.epfl.da.PerfectLink;
+package PerfectLink;
 
 import java.io.IOException;
 import java.net.DatagramPacket;

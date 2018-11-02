@@ -1,4 +1,4 @@
-package com.epfl.da.Enums;
+package Enums;
 
 
 public enum ProtocolTypeEnum {

@@ -1,14 +1,14 @@
-package com.epfl.da;
-
-import com.epfl.da.BestEffordBroadcast.BestEffortBroadcast;
-import com.epfl.da.PerfectLink.PerfectLink;
-import com.epfl.da.UniformReliableBroadcast.UniformReliableBroadcast;
+import BestEffordBroadcast.BestEffortBroadcast;
+import Listener.Listener;
+import PerfectLink.PerfectLink;
+import Process.Process;
+import UniformReliableBroadcast.UniformReliableBroadcast;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-public class Main {
+public class Da_proc {
 
     private static void TestSendPL(PerfectLink perfectLink) throws UnknownHostException {
         for (int x = 0; x < 10; x++){
@@ -64,7 +64,7 @@ public class Main {
 
         new Thread(()->{
             Listener l = new Listener(perfectLink, bestEffortBroadcast, uniformReliableBroadcast);
-            l.onMessageReceive = (x)->{System.out.println("Main handler message content" + x);};
+            l.onMessageReceive = (x)->{System.out.println("Da_proc handler message content" + x);};
             try {
                 l.Start();
             } catch (IOException e) {

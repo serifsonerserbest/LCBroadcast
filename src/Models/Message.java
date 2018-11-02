@@ -1,4 +1,4 @@
-package com.epfl.da.Models;
+package Models;
 
 public class Message{
     private int messageId;

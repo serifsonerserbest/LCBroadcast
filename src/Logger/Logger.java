@@ -1,4 +1,4 @@
-package com.epfl.da;
+package Logger;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;

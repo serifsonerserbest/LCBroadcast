@@ -1,4 +1,4 @@
-package com.epfl.da;
+package AppSettings;
 
 public class ApplicationSettings {
 

@@ -1,10 +1,10 @@
-package com.epfl.da.UniformReliableBroadcast;
+package UniformReliableBroadcast;
 
-import com.epfl.da.BestEffordBroadcast.BestEffortBroadcast;
-import com.epfl.da.Enums.ProtocolTypeEnum;
-import com.epfl.da.Models.Message;
-import com.epfl.da.PerfectLink.SendEvent;
-import com.epfl.da.Process;
+import BestEffordBroadcast.BestEffortBroadcast;
+import Enums.ProtocolTypeEnum;
+import Models.Message;
+import PerfectLink.SendEvent;
+import Process.Process;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.HashMap;
@@ -39,7 +39,7 @@ public class UniformReliableBroadcast {
         Message message = new Message(messageId, processId);
         forward.add(message);
 
-        //System.out.println("URB: " + Process.getInstance().Id + " Broadcast Message #" + message.getMessageId());
+        //System.out.println("URB: " + Process.Process.getInstance().Id + " Broadcast Message #" + message.getMessageId());
 
         System.out.println("b " +  Process.getInstance().Id);
         bestEffortBroadcast.Broadcast(content, processId, messageId, ProtocolTypeEnum.UniformReliableBroadcast, messageId);
@@ -51,7 +51,7 @@ public class UniformReliableBroadcast {
         boolean deliver = false;
         if(bestEffortBroadcast.Deliver(message, content, portReceived, addressReceived)){
 
-            //System.out.println("BEB: " + Process.getInstance().Id + " Message #" + message.getMessageId() + ":From Process: " + message.getProcessId() + " is delivered");
+            //System.out.println("BEB: " + Process.Process.getInstance().Id + " Message #" + message.getMessageId() + ":From Process.Process: " + message.getProcessId() + " is delivered");
             int count = ack.getOrDefault(originalMessage,0);
             ack.put(originalMessage, count + 1);
 
@@ -65,13 +65,13 @@ public class UniformReliableBroadcast {
         if(forward.contains(originalMessage)){
             if(canDeliver(originalMessage) && !delivered.contains(originalMessage)){
                 delivered.add(originalMessage);
-                //System.out.println("URB: " + Process.getInstance().Id + " Message #" + message.getMessageId() + ":From Process: " + originalMessage.getProcessId() + " is delivered");
+                //System.out.println("URB: " + Process.Process.getInstance().Id + " Message #" + message.getMessageId() + ":From Process.Process: " + originalMessage.getProcessId() + " is delivered");
 
                 System.out.println("d " +  originalMessage.getProcessId() + " " + originalMessage.getMessageId());
                 Process.getInstance().Logger.WriteToLog("d " +  originalMessage.getProcessId() + " " + originalMessage.getMessageId());
 
                 //For Debugging
-                //Process.getInstance().Logger.WriteToLog(Integer.toString(originalMessage.getMessageId()));
+                //Process.Process.getInstance().Logger.Logger.WriteToLog(Integer.toString(originalMessage.getMessageId()));
                 deliver = true;
             }
         }

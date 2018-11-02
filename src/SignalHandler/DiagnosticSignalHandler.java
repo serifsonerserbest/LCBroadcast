@@ -1,4 +1,4 @@
-package com.epfl.da;
+package SignalHandler;
 
 import sun.misc.Signal;
 import sun.misc.SignalHandler;
