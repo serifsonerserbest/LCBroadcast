@@ -35,23 +35,23 @@ public class FIFOBroadcast {
     }
 
 
-    public synchronized void Broadcast(int content){
+    public void Broadcast(int content){
         lsn ++;
         System.out.println("b " +  lsn);
         uniformReliableBroadcast.Broadcast(content, lsn);
         Process.getInstance().Logger.WriteToLog("b " +  lsn);
     }
 
-    public synchronized void Deliver(Message message, Message originalMessage, int content, int portReceived, InetAddress addressReceived, int fifoId) throws IOException {
+    public void Deliver(Message message, Message originalMessage, int content, int portReceived, InetAddress addressReceived, int fifoId) throws IOException {
         //System.out.println("Inside deliver");
         if(uniformReliableBroadcast.Deliver(message, originalMessage, content, portReceived, addressReceived, fifoId)) {
             //System.out.println("URB Delivered");
             int originalProcessId = originalMessage.getProcessId();
-            Message fifoMessage = new Message(fifoId, originalProcessId);
+            Message fifoMessage = new Message(fifoId, originalProcessId, content);
             pending.put(fifoMessage, originalMessage.getMessageId());
             while(true) {
                 int nextId = next[originalProcessId];
-                Message fifoKey = new Message(nextId, originalProcessId);
+                Message fifoKey = new Message(nextId, originalProcessId, content);
                 if(pending.containsKey(fifoKey)) {
                     pending.remove(fifoKey);
                     System.out.println("d " +  originalMessage.getProcessId() + " " + next[originalProcessId]);

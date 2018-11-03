@@ -33,15 +33,11 @@ public class UniformReliableBroadcast {
 
     }
 
-    //public static UniformReliableBroadcast getInst(){
-        //return uniformReliableBroadcast;
-    //}
+    public void Broadcast(int content){
 
-
-    public synchronized void Broadcast(int content){
         int messageId = SendEvent.NextId();
         int processId = Process.getInstance().Id;
-        Message message = new Message(messageId, processId);
+        Message message = new Message(messageId, processId, content);
         forward.add(message);
 
         //System.out.println("URB: " + Process.Process.getInstance().Id + " Broadcast Message #" + message.getMessageId());
@@ -51,15 +47,15 @@ public class UniformReliableBroadcast {
         //Process.getInstance().Logger.WriteToLog("b " +  Process.getInstance().Id);
     }
     //for FIFOBroadcast
-    public synchronized void Broadcast(int content, int fifoId) {
+    public  void Broadcast(int content, int fifoId) {
         int messageId = SendEvent.NextId();
         int processId = Process.getInstance().Id;
-        Message message = new Message(messageId, processId);
+        Message message = new Message(messageId, processId, content);
         forward.add(message);
         bestEffortBroadcast.Broadcast(content, processId, messageId, ProtocolTypeEnum.FIFOBroadcast, messageId, fifoId);
     }
 
-    public synchronized boolean Deliver(Message message, Message originalMessage, int content, int portReceived, InetAddress addressReceived, int fifoId) throws IOException {
+    public  boolean Deliver(Message message, Message originalMessage, int content, int portReceived, InetAddress addressReceived, int fifoId) throws IOException {
 
         boolean deliver = false;
         if(bestEffortBroadcast.Deliver(message, content, portReceived, addressReceived)){
@@ -92,7 +88,7 @@ public class UniformReliableBroadcast {
         return deliver;
     }
 
-    public synchronized boolean canDeliver(Message originalMessage){
+    public boolean canDeliver(Message originalMessage){
         int numOfProc = Process.getInstance().processes.size();
         int count = ack.getOrDefault(originalMessage,0);
         return count > numOfProc / 2;
