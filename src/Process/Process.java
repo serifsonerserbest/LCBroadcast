@@ -1,5 +1,6 @@
 package Process;
 
+import AppSettings.ApplicationSettings;
 import FIFOBroadcast.FIFOBroadcast;
 import Models.ProcessModel;
 import UniformReliableBroadcast.UniformReliableBroadcast;
@@ -16,6 +17,8 @@ public class Process {
     private volatile static Process process = new Process();
     public int Id;
     public int Port;
+    int amountMessageToSend;
+
 
     public Logger Logger;
     // todo change to hashset
@@ -27,12 +30,15 @@ public class Process {
         return process;
     }
 
-    public void Init(int id, String membershipFileName)
+    public void Init(int id, String membershipFileName, int amountMessageToSend)
     {
         Id = id;
         Logger = new Logger(Id);
+        this.amountMessageToSend = amountMessageToSend;
         ReadSettingFile(membershipFileName);
-        SetupSignalHandlers();
+        if(!ApplicationSettings.getInstance().isDebug) {
+            SetupSignalHandlers();
+        }
     }
 
     public ProcessModel GetProcessById(int id){
@@ -115,7 +121,9 @@ public class Process {
     {
         return sig -> {
             System.out.println("USR2");
-            FIFOBroadcast.getInst().Broadcast(1);
+            for(int i = 1; i <= amountMessageToSend; i ++) {
+                FIFOBroadcast.getInst().Broadcast(i);
+            }
         };
     }
     //endregion

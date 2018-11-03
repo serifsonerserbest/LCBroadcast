@@ -1,3 +1,4 @@
+import AppSettings.ApplicationSettings;
 import BestEffordBroadcast.BestEffortBroadcast;
 import FIFOBroadcast.FIFOBroadcast;
 import Listener.Listener;
@@ -46,10 +47,21 @@ public class Da_proc {
 
     public static void main(String[] args) throws InterruptedException, IOException {
 
-        int processId = 3;
-        String membershipFileName = "membership.txt";
+        int processId;
+        String membershipFileName;
+        int amountToSend;
+        if(ApplicationSettings.getInstance().isDebug) {
+            processId = 3;
+            membershipFileName = "membership.txt";
+            amountToSend = 0;
+        }
+        else {
+            processId = Integer.parseInt(args[0]);
+            membershipFileName = args[1];
+            amountToSend = Integer.parseInt(args[2]);
+        }
 
-        Process.getInstance().Init(processId, membershipFileName);
+        Process.getInstance().Init(processId, membershipFileName, amountToSend);
 
         PerfectLink perfectLink = new PerfectLink();
         BestEffortBroadcast bestEffortBroadcast = new BestEffortBroadcast();

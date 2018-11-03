@@ -36,10 +36,10 @@ public class FIFOBroadcast {
 
 
     public synchronized void Broadcast(int content){
-        System.out.println("b " +  Process.getInstance().Id);
         lsn ++;
+        System.out.println("b " +  lsn);
         uniformReliableBroadcast.Broadcast(content, lsn);
-        Process.getInstance().Logger.WriteToLog("b " +  Process.getInstance().Id);
+        Process.getInstance().Logger.WriteToLog("b " +  lsn);
     }
 
     public synchronized void Deliver(Message message, Message originalMessage, int content, int portReceived, InetAddress addressReceived, int fifoId) throws IOException {
