@@ -23,12 +23,12 @@ public class SendEvent {
     public SendEvent() {
     }
 
-    public static synchronized int NextId()
+    public synchronized static int NextId()
     {
        return ++messageId;
     }
 
-    public synchronized void SendMessage(int content, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int messageId)
+    public void SendMessage(int content, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int messageId)
     {
 
         DatagramSocket socketOut;
@@ -93,7 +93,7 @@ public class SendEvent {
             }
         }
 
-        private synchronized boolean SendMessage(DatagramPacket sendingPacket, DatagramPacket receivePacket, int attempts) throws IOException {
+        private boolean SendMessage(DatagramPacket sendingPacket, DatagramPacket receivePacket, int attempts) throws IOException {
             int counter = 0;
             while(attempts == -1 || counter <  attempts) {
                 socketOut.send(sendingPacket);
@@ -117,7 +117,7 @@ public class SendEvent {
             return false;
         }
 
-        private synchronized boolean SendDataMessage(DatagramPacket sendingPacket, DatagramPacket receivePacket) throws IOException {
+        private boolean SendDataMessage(DatagramPacket sendingPacket, DatagramPacket receivePacket) throws IOException {
             return SendMessage(sendingPacket,receivePacket, -1);
         }
     }
