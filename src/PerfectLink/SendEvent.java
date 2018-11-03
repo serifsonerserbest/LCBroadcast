@@ -14,7 +14,7 @@ import java.util.concurrent.Executors;
 
 public class SendEvent {
 
-    static final int timeoutVal = 30000;		// 300ms until timeout
+    static final int timeoutVal = 300;		// 300ms until timeout
     public static int messageId = 0;
 
     public BaseHandler receiveAcknowledgeHandler;
@@ -109,6 +109,7 @@ public class SendEvent {
                         return true;
                     }
                 } catch (SocketTimeoutException e) {
+                    System.out.println("from " + Process.getInstance().Id + " to " + destPort);
                     System.out.println("Timeout reached!!! " + e);
                 }
                 ++counter;

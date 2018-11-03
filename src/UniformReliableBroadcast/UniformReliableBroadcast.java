@@ -36,14 +36,14 @@ public class UniformReliableBroadcast {
     public synchronized void Broadcast(int content){
         int messageId = SendEvent.NextId();
         int processId = Process.getInstance().Id;
-        Message message = new Message(messageId, processId);
+        Message message = new Message(messageId, processId, content);
         forward.add(message);
 
         //System.out.println("URB: " + Process.Process.getInstance().Id + " Broadcast Message #" + message.getMessageId());
 
-        System.out.println("b " +  Process.getInstance().Id);
+        System.out.println("b " +  content);
         bestEffortBroadcast.Broadcast(content, processId, messageId, ProtocolTypeEnum.UniformReliableBroadcast, messageId);
-        Process.getInstance().Logger.WriteToLog("b " +  Process.getInstance().Id);
+        Process.getInstance().Logger.WriteToLog("b " +  content);
     }
 
     public synchronized boolean Deliver(Message message, Message originalMessage, int content, int portReceived, InetAddress addressReceived) throws IOException {
@@ -67,7 +67,7 @@ public class UniformReliableBroadcast {
                 delivered.add(originalMessage);
                 //System.out.println("URB: " + Process.Process.getInstance().Id + " Message #" + message.getMessageId() + ":From Process.Process: " + originalMessage.getProcessId() + " is delivered");
 
-                System.out.println("d " +  originalMessage.getProcessId() + " " + originalMessage.getMessageId());
+                System.out.println("d " +  originalMessage.getProcessId() + " " + originalMessage.getContent());
                 Process.getInstance().Logger.WriteToLog("d " +  originalMessage.getProcessId() + " " + originalMessage.getMessageId());
 
                 //For Debugging

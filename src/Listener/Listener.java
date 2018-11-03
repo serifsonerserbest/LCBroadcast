@@ -84,7 +84,7 @@ public class Listener {
             int protocol = messageArray[1];
             int content = messageArray[2];
             int processId = messageArray[3];
-            Message message = new Message(messageId, processId);
+            Message message = new Message(messageId, processId, content);
 
             //
 
@@ -100,7 +100,7 @@ public class Listener {
                 else if (protocol == ProtocolTypeEnum.UniformReliableBroadcast.ordinal()) {
                     int originalProcessId = messageArray[4];
                     int originalMessageId = messageArray[5];
-                    Message messageOriginal = new Message(originalMessageId, originalProcessId);
+                    Message messageOriginal = new Message(originalMessageId, originalProcessId, content);
                     delivered = uniformReliableBroadcast.Deliver(message, messageOriginal,content, portReceived, addressReceived);
                 }
                 else {

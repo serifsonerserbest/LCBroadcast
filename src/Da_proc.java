@@ -42,8 +42,10 @@ public class Da_proc {
 
         int processId = Integer.parseInt(args[0]);
         String membershipFileName = args[1];
+        int amountToSend = Integer.parseInt(args[2]);
 
-        Process.getInstance().Init(processId, membershipFileName);
+
+        Process.getInstance().Init(processId, membershipFileName, amountToSend);
 
         PerfectLink perfectLink = new PerfectLink();
         BestEffortBroadcast bestEffortBroadcast = new BestEffortBroadcast();
