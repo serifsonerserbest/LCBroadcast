@@ -1,16 +1,16 @@
-package com.epfl.da.BestEffordBroadcast;
+package BestEffordBroadcast;
 
-import com.epfl.da.Enums.ProtocolTypeEnum;
-import com.epfl.da.Interfaces.BaseHandler;
-import com.epfl.da.Interfaces.MessageHandler;
-import com.epfl.da.Listener;
-import com.epfl.da.Models.Message;
-import com.epfl.da.PerfectLink.PerfectLink;
-import com.epfl.da.PerfectLink.SendEvent;
-import com.epfl.da.Process;
+import Enums.ProtocolTypeEnum;
+import Models.Message;
+import Models.ProcessModel;
+import PerfectLink.PerfectLink;
+import PerfectLink.SendEvent;
+import Process.Process;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.ArrayList;
+
 
 public class BestEffortBroadcast {
 
@@ -22,9 +22,9 @@ public class BestEffortBroadcast {
 
     public void Broadcast(int message)
     {
-        var processes = Process.getInstance().processes;
-        var id = SendEvent.NextId();
-        System.out.println("BEB: " + Process.getInstance().Id + " Broadcast Message #" + id);
+        ArrayList<ProcessModel> processes = Process.getInstance().processes;
+        int id = SendEvent.NextId();
+        //System.out.println("URB: " + Process.Process.getInstance().Id + " Broadcast Message #" + id);
         for (int i = 0; i < processes.size(); i++) {
             perfectlink.Send(message, processes.get(i).address, processes.get(i).port, ProtocolTypeEnum.BestEffortBroadcast, id);
         }
@@ -33,12 +33,19 @@ public class BestEffortBroadcast {
     public void Broadcast(int content, int originalProcessId, int originalMessageId, ProtocolTypeEnum protocol, int messageId )
     {
 
-        var processes = Process.getInstance().processes;
+        ArrayList<ProcessModel> processes = Process.getInstance().processes;
         for (int i = 0; i < processes.size(); i++) {
             perfectlink.Send(content, processes.get(i).address, processes.get(i).port, protocol, originalProcessId , originalMessageId, messageId);
         }
     }
-
+    //** For FIFOBroadcast *//*
+    public void Broadcast(int content, int originalProcessId, int originalMessageId, ProtocolTypeEnum protocol, int messageId, int fifoId) {
+        ArrayList<ProcessModel> processes = Process.getInstance().processes;
+        for (int i = 0; i < processes.size(); i++) {
+            perfectlink.Send(content, processes.get(i).address, processes.get(i).port, protocol, originalProcessId , originalMessageId, messageId, fifoId);
+        }
+    }
+    
     public boolean Deliver(Message message, int content, int portReceived, InetAddress addressReceived) throws IOException {
         return perfectlink.Deliver(message, content, portReceived, addressReceived);
     }

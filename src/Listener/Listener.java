@@ -1,12 +1,13 @@
-package com.epfl.da;
+package Listener;
 
-import com.epfl.da.BestEffordBroadcast.BestEffortBroadcast;
-import com.epfl.da.Enums.ProtocolTypeEnum;
-import com.epfl.da.Interfaces.BaseHandler;
-import com.epfl.da.Interfaces.MessageHandler;
-import com.epfl.da.Models.Message;
-import com.epfl.da.PerfectLink.PerfectLink;
-import com.epfl.da.UniformReliableBroadcast.UniformReliableBroadcast;
+import BestEffordBroadcast.BestEffortBroadcast;
+import Enums.ProtocolTypeEnum;
+import FIFOBroadcast.FIFOBroadcast;
+import Interfaces.MessageHandler;
+import Models.Message;
+import PerfectLink.PerfectLink;
+import UniformReliableBroadcast.UniformReliableBroadcast;
+import Process.Process;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -16,7 +17,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -25,14 +25,15 @@ public class Listener {
     PerfectLink perfectLink;
     BestEffortBroadcast bestEffortBroadcast;
     UniformReliableBroadcast uniformReliableBroadcast;
-
+    FIFOBroadcast fifoBroadcast;
     public MessageHandler onMessageReceive;
 
-    public Listener(PerfectLink perfectLink, BestEffortBroadcast bestEffortBroadcast, UniformReliableBroadcast uniformReliableBroadcast) {
+    public Listener(PerfectLink perfectLink, BestEffortBroadcast bestEffortBroadcast, UniformReliableBroadcast uniformReliableBroadcast, FIFOBroadcast fifoBroadcast) {
         System.out.println("Listening ...");
         this.perfectLink = perfectLink;
         this.bestEffortBroadcast = bestEffortBroadcast;
         this.uniformReliableBroadcast = uniformReliableBroadcast;
+        this.fifoBroadcast = fifoBroadcast;
     }
 
     public void Start() throws IOException {
@@ -51,15 +52,12 @@ public class Listener {
             DatagramPacket receivedPacket = new DatagramPacket(packetReceived, packetReceived.length);
             socketIn.receive(receivedPacket);
 
-            // CHECK -STOP SIGNAL
-
             addressReceived = receivedPacket.getAddress();
             portReceived = receivedPacket.getPort();
             messageReceived = receivedPacket.getData();
 
             threadPool.submit(new RequestProcessing(Arrays.copyOf(messageReceived, messageReceived.length), portReceived, InetAddress.getByName(addressReceived.getHostAddress())));
         }
-
     }
 
     public class RequestProcessing implements Runnable {
@@ -88,24 +86,32 @@ public class Listener {
             int protocol = messageArray[1];
             int content = messageArray[2];
             int processId = messageArray[3];
-            Message message = new Message(messageId, processId);
+            Message message = new Message(messageId, processId, content);
 
             //
 
             // DELIVER MESSAGE ACCORDING TO PROTOCOLS
             try {
-                boolean delivered = false;
                 if (protocol == ProtocolTypeEnum.PerfectLink.ordinal()) {
-                    delivered = perfectLink.Deliver(message, content, portReceived, addressReceived);
+                    perfectLink.Deliver(message, content, portReceived, addressReceived);
                 }
                 else if (protocol == ProtocolTypeEnum.BestEffortBroadcast.ordinal()) {
-                    delivered = bestEffortBroadcast.Deliver(message, content, portReceived, addressReceived);
+                    bestEffortBroadcast.Deliver(message, content, portReceived, addressReceived);
                 }
                 else if (protocol == ProtocolTypeEnum.UniformReliableBroadcast.ordinal()) {
                     int originalProcessId = messageArray[4];
                     int originalMessageId = messageArray[5];
-                    Message messageOriginal = new Message(originalMessageId, originalProcessId);
-                    delivered = uniformReliableBroadcast.Deliver(message, messageOriginal,content, portReceived, addressReceived);
+
+                    Message messageOriginal = new Message(originalMessageId, originalProcessId, content);
+                    int fifoId = messageArray[6];
+                    uniformReliableBroadcast.Deliver(message, messageOriginal,content, portReceived, addressReceived, fifoId);
+                }
+                else if(protocol == ProtocolTypeEnum.FIFOBroadcast.ordinal()) {
+                    int originalProcessId = messageArray[4];
+                    int originalMessageId = messageArray[5];
+                    Message messageOriginal = new Message(originalMessageId, originalProcessId, content);
+                    int fifoId = messageArray[6];
+                    fifoBroadcast.Deliver(message, messageOriginal,content, portReceived, addressReceived, fifoId);
                 }
                 else {
                     System.out.println("Unknown protocol " + protocol);

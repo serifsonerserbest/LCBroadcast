@@ -1,8 +1,8 @@
-package com.epfl.da.PerfectLink;
+package PerfectLink;
 
-import com.epfl.da.Enums.ProtocolTypeEnum;
-import com.epfl.da.Interfaces.BaseHandler;
-import com.epfl.da.Process;
+import Enums.ProtocolTypeEnum;
+import Interfaces.BaseHandler;
+import Process.Process;
 
 import java.io.IOException;
 import java.net.*;
@@ -11,30 +11,32 @@ import java.nio.IntBuffer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+
 public class SendEvent {
 
-    static final int timeoutVal = 30000;		// 300ms until timeout
+    static final int timeoutVal = 300;		// 300ms until timeout
     public static int messageId = 0;
 
     public BaseHandler receiveAcknowledgeHandler;
     static ExecutorService service = Executors.newCachedThreadPool();
+
     public SendEvent() {
     }
 
-    public static int NextId()
+    public synchronized static int NextId()
     {
        return ++messageId;
     }
 
-    public void SendMessage(int content, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int messageId)
-    {
+    public void SendMessage(int content, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int messageId, int fifoId)
 
+    {
 
         DatagramSocket socketOut;
         try {
             socketOut = new DatagramSocket();                // outgoing channel
             socketOut.setSoTimeout(timeoutVal);
-             service.submit(new ThreadSend(socketOut, destPort, destAddress, content, messageId, protocol, originalProcessId, originalMessageId));
+            service.submit(new ThreadSend(socketOut, destPort, destAddress, content, messageId, protocol, originalProcessId, originalMessageId, fifoId));
 
             //ThreadSend th_out = new ThreadSend(socketOut, destPort, destAddress, message, messageId, receiveAcknowledgeHandler);
             //th_out.start();
@@ -52,9 +54,9 @@ public class SendEvent {
         ProtocolTypeEnum protocol;
         int originalProcessId;
         int originalMessageId;
-
+        int fifoId;
         // ThreadSend constructor
-        public ThreadSend(DatagramSocket socketOut, int destPort, InetAddress destAddress, int content, int messageId, ProtocolTypeEnum protocol,  int originalProcessId, int originalMessageId) {
+        public ThreadSend(DatagramSocket socketOut, int destPort, InetAddress destAddress, int content, int messageId, ProtocolTypeEnum protocol,  int originalProcessId, int originalMessageId, int fifoId) {
             this.socketOut = socketOut;
             this.destPort = destPort;
             this.destAddress = destAddress;
@@ -63,13 +65,14 @@ public class SendEvent {
             this.protocol = protocol;
             this.originalMessageId = originalMessageId;
             this.originalProcessId = originalProcessId;
+            this.fifoId = fifoId;
         }
 
         public void run() {
 
             byte[] in_data = new byte[32];    // ack packet with no data
             //todo create data according to protocol
-            int[] data = {this.messageId, protocol.ordinal(), this.content, Process.getInstance().Id, originalProcessId, originalMessageId};
+            int[] data = {this.messageId, protocol.ordinal(), this.content, Process.getInstance().Id, originalProcessId, originalMessageId, fifoId};
             ByteBuffer byteBuffer = ByteBuffer.allocate(data.length * 4);
             IntBuffer intBuffer = byteBuffer.asIntBuffer();
             intBuffer.put(data);
@@ -79,7 +82,7 @@ public class SendEvent {
             DatagramPacket receivePacket =  new DatagramPacket(in_data, in_data.length);
             boolean result = false;
             try {
-                    result = SendDataMessage(sendingPacket, receivePacket);
+                result = SendDataMessage(sendingPacket, receivePacket);
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -108,6 +111,7 @@ public class SendEvent {
                         return true;
                     }
                 } catch (SocketTimeoutException e) {
+                    System.out.println("from " + Process.getInstance().Id + " to " + destPort);
                     System.out.println("Timeout reached!!! " + e);
                 }
                 ++counter;

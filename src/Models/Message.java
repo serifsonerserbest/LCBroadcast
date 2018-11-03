@@ -1,11 +1,14 @@
-package com.epfl.da.Models;
+package Models;
 
 public class Message{
     private int messageId;
     private int processId;
-    public Message(int messageId, int processId) {
+    private int content;
+
+    public Message(int messageId, int processId, int content) {
         this.messageId = messageId;
         this.processId = processId;
+        this.content = content;
     }
 
     public int getMessageId(){
@@ -14,6 +17,10 @@ public class Message{
 
     public int getProcessId(){
         return processId;
+    }
+
+    public int getContent(){
+        return content;
     }
 
     @Override

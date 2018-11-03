@@ -1,4 +1,4 @@
-package com.epfl.da.Interfaces;
+package Interfaces;
 
 public interface BaseHandler {
     void handle();

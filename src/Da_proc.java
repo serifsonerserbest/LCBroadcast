@@ -1,18 +1,16 @@
-package com.epfl.da;
-
-import com.epfl.da.BestEffordBroadcast.BestEffortBroadcast;
-import com.epfl.da.PerfectLink.PerfectLink;
-import com.epfl.da.UniformReliableBroadcast.UniformReliableBroadcast;
+import AppSettings.ApplicationSettings;
+import BestEffordBroadcast.BestEffortBroadcast;
+import FIFOBroadcast.FIFOBroadcast;
+import Listener.Listener;
+import PerfectLink.PerfectLink;
+import Process.Process;
+import UniformReliableBroadcast.UniformReliableBroadcast;
 
 import java.io.IOException;
-import java.net.Inet4Address;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 
-
-public class Main {
+public class Da_proc {
 
     private static void TestSendPL(PerfectLink perfectLink) throws UnknownHostException {
         for (int x = 0; x < 10; x++){
@@ -37,19 +35,38 @@ public class Main {
     }
 
     private static void TestSendUR(UniformReliableBroadcast uniformReliableBroadcast) throws UnknownHostException {
-        uniformReliableBroadcast.Broadcast(1);
+        for (int x = 0; x < 10000; x++){
+            uniformReliableBroadcast.Broadcast(1);
+        }
+    }
+    private static void TestSendFIFO(FIFOBroadcast fifoBroadcast) throws UnknownHostException {
+        for (int x = 0; x < 100; x++){
+            fifoBroadcast.Broadcast(1);
+        }
     }
 
     public static void main(String[] args) throws InterruptedException, IOException {
 
-        int processId = 3;
-        Process.getInstance().Init(processId, "membership.txt");
+        int processId;
+        String membershipFileName;
+        int amountToSend;
+        if(ApplicationSettings.getInstance().isDebug) {
+            processId = 3;
+            membershipFileName = "membership.txt";
+            amountToSend = 0;
+        }
+        else {
+            processId = Integer.parseInt(args[0]);
+            membershipFileName = args[1];
+            amountToSend = Integer.parseInt(args[2]);
+        }
 
+        Process.getInstance().Init(processId, membershipFileName, amountToSend);
 
         PerfectLink perfectLink = new PerfectLink();
         BestEffortBroadcast bestEffortBroadcast = new BestEffortBroadcast();
-        UniformReliableBroadcast uniformReliableBroadcast = UniformReliableBroadcast.getInst();
-
+        UniformReliableBroadcast uniformReliableBroadcast = new UniformReliableBroadcast();
+        FIFOBroadcast fifoBroadcast = FIFOBroadcast.getInst();
         /*long startTime = System.currentTimeMillis();
 
         Runtime.getRuntime().addShutdownHook(new Thread()
@@ -64,8 +81,8 @@ public class Main {
         });*/
 
         new Thread(()->{
-            Listener l = new Listener(perfectLink, bestEffortBroadcast, uniformReliableBroadcast);
-            l.onMessageReceive = (x)->{System.out.println("Main handler message content" + x);};
+            Listener l = new Listener(perfectLink, bestEffortBroadcast, uniformReliableBroadcast, fifoBroadcast);
+            l.onMessageReceive = (x)->{System.out.println("Da_proc handler message content" + x);};
             try {
                 l.Start();
             } catch (IOException e) {
@@ -77,15 +94,14 @@ public class Main {
 
         //TestSendPL(perfectLink);
         //TestSendBE(bestEffortBroadcast);
-        TestSendUR(uniformReliableBroadcast);
+        //TestSendUR(uniformReliableBroadcast);
+        TestSendFIFO(fifoBroadcast);
+        Thread.sleep(100000);
+        Process.getInstance().Logger.WriteLogToFile();
+        System.out.println("Log File created");
 
         while(true){
             Thread.sleep(1000);
         }
-
-
     }
-
-
-
 }
