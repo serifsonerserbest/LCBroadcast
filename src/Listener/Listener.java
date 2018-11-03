@@ -3,8 +3,7 @@ package Listener;
 import BestEffordBroadcast.BestEffortBroadcast;
 import Enums.ProtocolTypeEnum;
 import FIFOBroadcast.FIFOBroadcast;
-import Interfaces.MessageHandler;
-import Models.Message;
+import Models.MessageModel;
 import PerfectLink.PerfectLink;
 import UniformReliableBroadcast.UniformReliableBroadcast;
 import Process.Process;
@@ -22,11 +21,11 @@ import java.util.concurrent.Executors;
 
 public class Listener {
     DatagramSocket socketIn;
+
     PerfectLink perfectLink;
     BestEffortBroadcast bestEffortBroadcast;
     UniformReliableBroadcast uniformReliableBroadcast;
     FIFOBroadcast fifoBroadcast;
-    public MessageHandler onMessageReceive;
 
     public Listener(PerfectLink perfectLink, BestEffortBroadcast bestEffortBroadcast, UniformReliableBroadcast uniformReliableBroadcast, FIFOBroadcast fifoBroadcast) {
         System.out.println("Listening ...");
@@ -44,7 +43,6 @@ public class Listener {
         byte[] messageReceived;
         int portReceived;
 
-        //perfectLink.onMessageReceive = onMessageReceive;
         ExecutorService threadPool = Executors.newCachedThreadPool();
 
         while (true) {
@@ -81,16 +79,14 @@ public class Listener {
             int[] messageArray = new int[intBuf.remaining()];
             intBuf.get(messageArray);
 
-            //PRE PROCESSING THE MESSAGE
+            //PRE PROCESS THE MESSAGE
             int messageId = messageArray[0];
             int protocol = messageArray[1];
             int content = messageArray[2];
             int processId = messageArray[3];
-            Message message = new Message(messageId, processId, content);
+            MessageModel message = new MessageModel(messageId, processId, content);
 
-            //
-
-            // DELIVER MESSAGE ACCORDING TO PROTOCOLS
+            // DELIVER THE MESSAGE ACCORDING TO PROTOCOL
             try {
                 if (protocol == ProtocolTypeEnum.PerfectLink.ordinal()) {
                     perfectLink.Deliver(message, content, portReceived, addressReceived);
@@ -102,14 +98,13 @@ public class Listener {
                     int originalProcessId = messageArray[4];
                     int originalMessageId = messageArray[5];
 
-                    Message messageOriginal = new Message(originalMessageId, originalProcessId, content);
-                    int fifoId = messageArray[6];
-                    uniformReliableBroadcast.Deliver(message, messageOriginal,content, portReceived, addressReceived, fifoId);
+                    MessageModel messageOriginal = new MessageModel(originalMessageId, originalProcessId, content);
+                    uniformReliableBroadcast.Deliver(message, messageOriginal,content, portReceived, addressReceived, 0);
                 }
                 else if(protocol == ProtocolTypeEnum.FIFOBroadcast.ordinal()) {
                     int originalProcessId = messageArray[4];
                     int originalMessageId = messageArray[5];
-                    Message messageOriginal = new Message(originalMessageId, originalProcessId, content);
+                    MessageModel messageOriginal = new MessageModel(originalMessageId, originalProcessId, content);
                     int fifoId = messageArray[6];
                     fifoBroadcast.Deliver(message, messageOriginal,content, portReceived, addressReceived, fifoId);
                 }

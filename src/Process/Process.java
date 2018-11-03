@@ -3,7 +3,7 @@ package Process;
 import AppSettings.ApplicationSettings;
 import FIFOBroadcast.FIFOBroadcast;
 import Models.ProcessModel;
-import UniformReliableBroadcast.UniformReliableBroadcast;
+
 import sun.misc.SignalHandler;
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -15,13 +15,11 @@ import SignalHandler.DiagnosticSignalHandler;
 public class Process {
 
     private volatile static Process process = new Process();
-    public int Id;
-    public int Port;
     int amountMessageToSend;
 
-
+    public int Id;
+    public int Port;
     public Logger Logger;
-    // todo change to hashset
     public ArrayList<ProcessModel> processes = new ArrayList<ProcessModel>();
 
     private Process() {}
@@ -30,8 +28,8 @@ public class Process {
         return process;
     }
 
-    public void Init(int id, String membershipFileName, int amountMessageToSend)
-    {
+    public void Init(int id, String membershipFileName, int amountMessageToSend) {
+
         Id = id;
         this.amountMessageToSend = amountMessageToSend;
         Logger = new Logger(Id);
@@ -43,6 +41,7 @@ public class Process {
     }
 
     public ProcessModel GetProcessById(int id){
+
         for (int i = 0; i < processes.size(); i++) {
             ProcessModel currentProcess = processes.get(i);
             if(currentProcess.id == id) {
@@ -86,9 +85,8 @@ public class Process {
     //endregion
 
     //region Signal Handlers
+    private SignalHandler GetTermHandler() {
 
-    private SignalHandler GetTermHandler()
-    {
          return sig -> {
              System.out.println("TERM");
              Logger.WriteLogToFile();
@@ -96,16 +94,17 @@ public class Process {
          };
     }
 
-    private SignalHandler GetIntHandler()
-    {
+    private SignalHandler GetIntHandler() {
+
         return sig -> {
             System.out.println("INT");
             Logger.WriteLogToFile();
             System.exit(-1);
         };
     }
-    private SignalHandler GetUsr1Handler()
-    {
+
+    private SignalHandler GetUsr1Handler() {
+
         return sig -> {
             System.out.println("USR2");
             for(int i = 1; i <= amountMessageToSend; i ++) {

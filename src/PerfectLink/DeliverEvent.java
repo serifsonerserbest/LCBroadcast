@@ -10,6 +10,7 @@ import java.nio.IntBuffer;
 public class DeliverEvent {
 
     public synchronized void sendAck(int port, InetAddress address, int messageId) throws IOException {
+
         DatagramSocket socket = new DatagramSocket();
         int[] data = {messageId};
         ByteBuffer byteBuffer = ByteBuffer.allocate(data.length * 4);
