@@ -15,16 +15,15 @@ public class Logger {
         outputFileName = "da_proc_" + processId + ".out";
     }
 
-    public synchronized void WriteToLog (final String message) {
+    public synchronized void WriteToLog(final String message) {
         // todo think about multithreading
-        if(message != null && !message.trim().isEmpty())
-        {
+        if (message != null && !message.trim().isEmpty()) {
             Log.add(message);
         }
     }
 
-    public synchronized void WriteLogToFile () {
-        try(BufferedWriter writer = new BufferedWriter(new FileWriter(outputFileName))){
+    public synchronized void WriteLogToFile() {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputFileName))) {
             for (String message : Log) {
                 writer.write(message + "\n");
             }

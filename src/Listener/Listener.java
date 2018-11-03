@@ -1,12 +1,7 @@
 package Listener;
 
-import BestEffordBroadcast.BestEffortBroadcast;
-import Enums.ProtocolTypeEnum;
 import FIFOBroadcast.FIFOBroadcast;
-import Interfaces.MessageHandler;
 import Models.Message;
-import PerfectLink.PerfectLink;
-import UniformReliableBroadcast.UniformReliableBroadcast;
 import Process.Process;
 
 import java.io.IOException;
@@ -22,17 +17,11 @@ import java.util.concurrent.Executors;
 
 public class Listener {
     DatagramSocket socketIn;
-    PerfectLink perfectLink;
-    BestEffortBroadcast bestEffortBroadcast;
-    UniformReliableBroadcast uniformReliableBroadcast;
     FIFOBroadcast fifoBroadcast;
-    public MessageHandler onMessageReceive;
 
-    public Listener(PerfectLink perfectLink, BestEffortBroadcast bestEffortBroadcast, UniformReliableBroadcast uniformReliableBroadcast, FIFOBroadcast fifoBroadcast) {
+    public Listener(FIFOBroadcast fifoBroadcast) {
+
         System.out.println("Listening ...");
-        this.perfectLink = perfectLink;
-        this.bestEffortBroadcast = bestEffortBroadcast;
-        this.uniformReliableBroadcast = uniformReliableBroadcast;
         this.fifoBroadcast = fifoBroadcast;
     }
 
@@ -88,37 +77,15 @@ public class Listener {
             int processId = messageArray[3];
             Message message = new Message(messageId, processId, content);
 
-            //
+            int originalProcessId = messageArray[4];
+            int originalMessageId = messageArray[5];
+            Message messageOriginal = new Message(originalMessageId, originalProcessId, content);
 
-            // DELIVER MESSAGE ACCORDING TO PROTOCOLS
+            int fifoId = messageArray[6];
             try {
-                if (protocol == ProtocolTypeEnum.PerfectLink.ordinal()) {
-                    perfectLink.Deliver(message, content, portReceived, addressReceived);
-                }
-                else if (protocol == ProtocolTypeEnum.BestEffortBroadcast.ordinal()) {
-                    bestEffortBroadcast.Deliver(message, content, portReceived, addressReceived);
-                }
-                else if (protocol == ProtocolTypeEnum.UniformReliableBroadcast.ordinal()) {
-                    int originalProcessId = messageArray[4];
-                    int originalMessageId = messageArray[5];
-
-                    Message messageOriginal = new Message(originalMessageId, originalProcessId, content);
-                    int fifoId = messageArray[6];
-                    uniformReliableBroadcast.Deliver(message, messageOriginal,content, portReceived, addressReceived, fifoId);
-                }
-                else if(protocol == ProtocolTypeEnum.FIFOBroadcast.ordinal()) {
-                    int originalProcessId = messageArray[4];
-                    int originalMessageId = messageArray[5];
-                    Message messageOriginal = new Message(originalMessageId, originalProcessId, content);
-                    int fifoId = messageArray[6];
-                    fifoBroadcast.Deliver(message, messageOriginal,content, portReceived, addressReceived, fifoId);
-                }
-                else {
-                    System.out.println("Unknown protocol " + protocol);
-                    return;
-                }
+                fifoBroadcast.Deliver(message, messageOriginal, content, portReceived, addressReceived, fifoId);
             } catch (IOException e) {
-                System.out.println("RequestProcessing error: " + e);
+                e.printStackTrace();
             }
         }
     }

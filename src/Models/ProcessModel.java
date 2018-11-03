@@ -7,7 +7,7 @@ public class ProcessModel {
     public InetAddress address;
     public int id;
 
-    public ProcessModel(int id, InetAddress address, int port){
+    public ProcessModel(int id, InetAddress address, int port) {
         this.port = port;
         this.address = address;
         this.id = id;

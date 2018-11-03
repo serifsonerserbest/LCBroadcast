@@ -1,7 +1,6 @@
 package PerfectLink;
 
 import Enums.ProtocolTypeEnum;
-import Interfaces.BaseHandler;
 import Process.Process;
 
 import java.io.IOException;
@@ -14,23 +13,19 @@ import java.util.concurrent.Executors;
 
 public class SendEvent {
 
-    static final int timeoutVal = 3000;		// 300ms until timeout
+    static final int timeoutVal = 3000;        // 300ms until timeout
     public static int messageId = 0;
 
-    public BaseHandler receiveAcknowledgeHandler;
     static ExecutorService service = Executors.newCachedThreadPool();
 
     public SendEvent() {
     }
 
-    public synchronized static int NextId()
-    {
-       return ++messageId;
+    public synchronized static int NextId() {
+        return ++messageId;
     }
 
-    public synchronized void SendMessage(int content, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int messageId, int fifoId)
-
-    {
+    public synchronized void SendMessage(int content, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int messageId, int fifoId) {
 
         DatagramSocket socketOut;
         try {
@@ -55,8 +50,9 @@ public class SendEvent {
         int originalProcessId;
         int originalMessageId;
         int fifoId;
+
         // ThreadSend constructor
-        public ThreadSend(DatagramSocket socketOut, int destPort, InetAddress destAddress, int content, int messageId, ProtocolTypeEnum protocol,  int originalProcessId, int originalMessageId, int fifoId) {
+        public ThreadSend(DatagramSocket socketOut, int destPort, InetAddress destAddress, int content, int messageId, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int fifoId) {
             this.socketOut = socketOut;
             this.destPort = destPort;
             this.destAddress = destAddress;
@@ -79,7 +75,7 @@ public class SendEvent {
             byte[] out_data = byteBuffer.array();
 
             DatagramPacket sendingPacket = new DatagramPacket(out_data, out_data.length, destAddress, destPort);
-            DatagramPacket receivePacket =  new DatagramPacket(in_data, in_data.length);
+            DatagramPacket receivePacket = new DatagramPacket(in_data, in_data.length);
             boolean result = false;
             try {
                 result = SendDataMessage(sendingPacket, receivePacket);
@@ -90,14 +86,11 @@ public class SendEvent {
                 socketOut.close();        // close outgoing socket
                 //System.out.println("SendEvent: socketOut closed!");
             }
-            if(receiveAcknowledgeHandler != null && result) {
-                receiveAcknowledgeHandler.handle();
-            }
         }
 
         private boolean SendMessage(DatagramPacket sendingPacket, DatagramPacket receivePacket, int attempts) throws IOException {
             int counter = 0;
-            while(attempts == -1 || counter <  attempts) {
+            while (attempts == -1 || counter < attempts) {
                 socketOut.send(sendingPacket);
 
                 //System.out.println("SendEvent: Sent, Message Id:" + messageId);
@@ -120,7 +113,7 @@ public class SendEvent {
         }
 
         private boolean SendDataMessage(DatagramPacket sendingPacket, DatagramPacket receivePacket) throws IOException {
-            return SendMessage(sendingPacket,receivePacket, -1);
+            return SendMessage(sendingPacket, receivePacket, -1);
         }
     }
 }
