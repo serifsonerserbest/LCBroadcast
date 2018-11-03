@@ -36,7 +36,7 @@ public class FIFOBroadcast {
 
 
     public synchronized void Broadcast(int content){
-        System.out.println("FIFO b " +  Process.getInstance().Id);
+        System.out.println("b " +  Process.getInstance().Id);
         lsn ++;
         uniformReliableBroadcast.Broadcast(content, lsn);
         Process.getInstance().Logger.WriteToLog("b " +  Process.getInstance().Id);
@@ -53,11 +53,11 @@ public class FIFOBroadcast {
                 int nextId = next[originalProcessId];
                 Message fifoKey = new Message(nextId, originalProcessId);
                 if(pending.containsKey(fifoKey)) {
-                    next[originalProcessId] ++;
                     pending.remove(fifoKey);
-                    System.out.println("d " +  originalMessage.getProcessId() + " " + fifoId);
+                    System.out.println("d " +  originalMessage.getProcessId() + " " + next[originalProcessId]);
                     //System.out.println("FIFO: " + Process.getInstance().Id + " Message #" + message.getMessageId() + ":From Process: " + originalMessage.getProcessId() + " is delivered");
-                    Process.getInstance().Logger.WriteToLog("d " +  originalMessage.getProcessId() + " " + fifoId);
+                    Process.getInstance().Logger.WriteToLog("d " +  originalMessage.getProcessId() + " " + next[originalProcessId]);
+                    next[originalProcessId] ++;
                 }
                 else break;
             }
