@@ -74,11 +74,11 @@ public class Listener {
             int messageId = messageArray[0];
             int content = messageArray[1];
             int processId = messageArray[2];
-            MessageModel message = new MessageModel(messageId, processId, content);
+            MessageModel message = new MessageModel(messageId, processId);
 
             int originalProcessId = messageArray[3];
             int originalMessageId = messageArray[4];
-            MessageModel messageOriginal = new MessageModel(originalMessageId, originalProcessId, content);
+            MessageModel messageOriginal = new MessageModel(originalMessageId, originalProcessId);
 
             int fifoId = messageArray[5];
             try {

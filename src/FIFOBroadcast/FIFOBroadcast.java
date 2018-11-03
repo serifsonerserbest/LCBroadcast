@@ -44,11 +44,11 @@ public class FIFOBroadcast {
 
         if (uniformReliableBroadcast.Deliver(message, originalMessage, content, portReceived, addressReceived, fifoId)) {
             int originalProcessId = originalMessage.getProcessId();
-            MessageModel fifoMessage = new MessageModel(fifoId, originalProcessId, content);
+            MessageModel fifoMessage = new MessageModel(fifoId, originalProcessId);
             pending.put(fifoMessage, originalMessage.getMessageId());
             while (true) {
                 int nextId = next[originalProcessId];
-                MessageModel fifoKey = new MessageModel(nextId, originalProcessId, content);
+                MessageModel fifoKey = new MessageModel(nextId, originalProcessId);
                 if (pending.containsKey(fifoKey)) {
                     pending.remove(fifoKey);
                     System.out.println("d " + originalMessage.getProcessId() + " " + next[originalProcessId]);

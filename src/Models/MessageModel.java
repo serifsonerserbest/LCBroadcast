@@ -3,12 +3,10 @@ package Models;
 public class MessageModel {
     private int messageId;
     private int processId;
-    private int content;
 
-    public MessageModel(int messageId, int processId, int content) {
+    public MessageModel(int messageId, int processId) {
         this.messageId = messageId;
         this.processId = processId;
-        this.content = content;
     }
 
     public int getMessageId() {
@@ -17,10 +15,6 @@ public class MessageModel {
 
     public int getProcessId() {
         return processId;
-    }
-
-    public int getContent() {
-        return content;
     }
 
     @Override

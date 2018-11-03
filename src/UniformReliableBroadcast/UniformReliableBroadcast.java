@@ -33,7 +33,7 @@ public class UniformReliableBroadcast {
 
         int messageId = SendEvent.NextId();
         int processId = Process.getInstance().Id;
-        MessageModel message = new MessageModel(messageId, processId, content);
+        MessageModel message = new MessageModel(messageId, processId);
         forward.add(message);
         bestEffortBroadcast.Broadcast(content, processId, messageId, messageId, fifoId);
     }
