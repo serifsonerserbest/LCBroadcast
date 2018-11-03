@@ -1,7 +1,7 @@
 package Listener;
 
 import FIFOBroadcast.FIFOBroadcast;
-import Models.Message;
+import Models.MessageModel;
 import Process.Process;
 
 import java.io.IOException;
@@ -72,16 +72,15 @@ public class Listener {
 
             //PRE PROCESSING THE MESSAGE
             int messageId = messageArray[0];
-            int protocol = messageArray[1];
-            int content = messageArray[2];
-            int processId = messageArray[3];
-            Message message = new Message(messageId, processId, content);
+            int content = messageArray[1];
+            int processId = messageArray[2];
+            MessageModel message = new MessageModel(messageId, processId, content);
 
-            int originalProcessId = messageArray[4];
-            int originalMessageId = messageArray[5];
-            Message messageOriginal = new Message(originalMessageId, originalProcessId, content);
+            int originalProcessId = messageArray[3];
+            int originalMessageId = messageArray[4];
+            MessageModel messageOriginal = new MessageModel(originalMessageId, originalProcessId, content);
 
-            int fifoId = messageArray[6];
+            int fifoId = messageArray[5];
             try {
                 fifoBroadcast.Deliver(message, messageOriginal, content, portReceived, addressReceived, fifoId);
             } catch (IOException e) {

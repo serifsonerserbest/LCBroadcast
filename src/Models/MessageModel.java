@@ -1,11 +1,11 @@
 package Models;
 
-public class Message {
+public class MessageModel {
     private int messageId;
     private int processId;
     private int content;
 
-    public Message(int messageId, int processId, int content) {
+    public MessageModel(int messageId, int processId, int content) {
         this.messageId = messageId;
         this.processId = processId;
         this.content = content;
@@ -27,7 +27,7 @@ public class Message {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Message message = (Message) o;
+        MessageModel message = (MessageModel) o;
         return hashCode() == message.hashCode();
     }
 

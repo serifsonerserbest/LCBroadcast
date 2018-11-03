@@ -17,6 +17,8 @@ public class Da_proc {
 
     public static void main(String[] args) throws InterruptedException, IOException {
 
+        // FIFO BROADCAST PROTOCOL IS USED IN THIS PROGRAM
+
         // SYSTEM INPUTS
         int processId;
         String membershipFileName;

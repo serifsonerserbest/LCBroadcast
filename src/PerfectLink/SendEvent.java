@@ -25,13 +25,13 @@ public class SendEvent {
         return ++messageId;
     }
 
-    public synchronized void SendMessage(int content, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int messageId, int fifoId) {
+    public synchronized void SendMessage(int content, InetAddress destAddress, int destPort, int originalProcessId, int originalMessageId, int messageId, int fifoId) {
 
         DatagramSocket socketOut;
         try {
             socketOut = new DatagramSocket();                // outgoing channel
             socketOut.setSoTimeout(timeoutVal);
-            service.submit(new ThreadSend(socketOut, destPort, destAddress, content, messageId, protocol, originalProcessId, originalMessageId, fifoId));
+            service.submit(new ThreadSend(socketOut, destPort, destAddress, content, messageId, originalProcessId, originalMessageId, fifoId));
 
             //ThreadSend th_out = new ThreadSend(socketOut, destPort, destAddress, message, messageId, receiveAcknowledgeHandler);
             //th_out.start();
@@ -46,19 +46,17 @@ public class SendEvent {
         private InetAddress destAddress;
         int content;
         int messageId;
-        ProtocolTypeEnum protocol;
         int originalProcessId;
         int originalMessageId;
         int fifoId;
 
         // ThreadSend constructor
-        public ThreadSend(DatagramSocket socketOut, int destPort, InetAddress destAddress, int content, int messageId, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int fifoId) {
+        public ThreadSend(DatagramSocket socketOut, int destPort, InetAddress destAddress, int content, int messageId, int originalProcessId, int originalMessageId, int fifoId) {
             this.socketOut = socketOut;
             this.destPort = destPort;
             this.destAddress = destAddress;
             this.content = content;
             this.messageId = messageId;
-            this.protocol = protocol;
             this.originalMessageId = originalMessageId;
             this.originalProcessId = originalProcessId;
             this.fifoId = fifoId;
@@ -67,8 +65,8 @@ public class SendEvent {
         public void run() {
 
             byte[] in_data = new byte[32];    // ack packet with no data
-            //todo create data according to protocol
-            int[] data = {this.messageId, protocol.ordinal(), this.content, Process.getInstance().Id, originalProcessId, originalMessageId, fifoId};
+
+            int[] data = {this.messageId, this.content, Process.getInstance().Id, originalProcessId, originalMessageId, fifoId};
             ByteBuffer byteBuffer = ByteBuffer.allocate(data.length * 4);
             IntBuffer intBuffer = byteBuffer.asIntBuffer();
             intBuffer.put(data);
@@ -93,7 +91,7 @@ public class SendEvent {
             while (attempts == -1 || counter < attempts) {
                 socketOut.send(sendingPacket);
 
-                //System.out.println("SendEvent: Sent, Message Id:" + messageId);
+                //System.out.println("SendEvent: Sent, MessageModel Id:" + messageId);
 
                 try {
                     socketOut.receive(receivePacket);

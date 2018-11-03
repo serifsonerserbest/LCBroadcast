@@ -1,8 +1,7 @@
 package UniformReliableBroadcast;
 
 import BestEffordBroadcast.BestEffortBroadcast;
-import Enums.ProtocolTypeEnum;
-import Models.Message;
+import Models.MessageModel;
 import PerfectLink.SendEvent;
 import Process.Process;
 
@@ -11,19 +10,18 @@ import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.HashSet;
 
-
 public class UniformReliableBroadcast {
 
     private BestEffortBroadcast bestEffortBroadcast;
-    private HashMap<Message, Integer> ack;
-    private HashSet<Message> delivered;
-    private HashSet<Message> forward;
+    private HashMap<MessageModel, Integer> ack;
+    private HashSet<MessageModel> delivered;
+    private HashSet<MessageModel> forward;
 
     public UniformReliableBroadcast() {
         bestEffortBroadcast = new BestEffortBroadcast();
-        ack = new HashMap<Message, Integer>();
-        delivered = new HashSet<Message>();
-        forward = new HashSet<Message>();
+        ack = new HashMap<MessageModel, Integer>();
+        delivered = new HashSet<MessageModel>();
+        forward = new HashSet<MessageModel>();
         ack = new HashMap<>();
         delivered = new HashSet<>();
         forward = new HashSet<>();
@@ -35,12 +33,12 @@ public class UniformReliableBroadcast {
 
         int messageId = SendEvent.NextId();
         int processId = Process.getInstance().Id;
-        Message message = new Message(messageId, processId, content);
+        MessageModel message = new MessageModel(messageId, processId, content);
         forward.add(message);
-        bestEffortBroadcast.Broadcast(content, processId, messageId, ProtocolTypeEnum.FIFOBroadcast, messageId, fifoId);
+        bestEffortBroadcast.Broadcast(content, processId, messageId, messageId, fifoId);
     }
 
-    public synchronized boolean Deliver(Message message, Message originalMessage, int content, int portReceived, InetAddress addressReceived, int fifoId) throws IOException {
+    public synchronized boolean Deliver(MessageModel message, MessageModel originalMessage, int content, int portReceived, InetAddress addressReceived, int fifoId) throws IOException {
 
         boolean deliver = false;
         if (bestEffortBroadcast.Deliver(message, content, portReceived, addressReceived)) {
@@ -50,12 +48,10 @@ public class UniformReliableBroadcast {
             if (!forward.contains(originalMessage)) {
                 forward.add(originalMessage);
                 int id = SendEvent.NextId();
-                bestEffortBroadcast.Broadcast(content, originalMessage.getProcessId(), originalMessage.getMessageId(),
-                        ProtocolTypeEnum.FIFOBroadcast, id, fifoId);
+                bestEffortBroadcast.Broadcast(content, originalMessage.getProcessId(), originalMessage.getMessageId(), id, fifoId);
             }
         }
         if (forward.contains(originalMessage)) {
-
             if (canDeliver(originalMessage) && !delivered.contains(originalMessage)) {
                 delivered.add(originalMessage);
                 deliver = true;
@@ -64,7 +60,7 @@ public class UniformReliableBroadcast {
         return deliver;
     }
 
-    public synchronized boolean canDeliver(Message originalMessage) {
+    public synchronized boolean canDeliver(MessageModel originalMessage) {
 
         int numOfProc = Process.getInstance().processes.size();
         int count = ack.getOrDefault(originalMessage, 0);
