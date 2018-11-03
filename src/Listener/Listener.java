@@ -2,6 +2,7 @@ package Listener;
 
 import BestEffordBroadcast.BestEffortBroadcast;
 import Enums.ProtocolTypeEnum;
+import FIFOBroadcast.FIFOBroadcast;
 import Interfaces.MessageHandler;
 import Models.Message;
 import PerfectLink.PerfectLink;
@@ -24,14 +25,15 @@ public class Listener {
     PerfectLink perfectLink;
     BestEffortBroadcast bestEffortBroadcast;
     UniformReliableBroadcast uniformReliableBroadcast;
-
+    FIFOBroadcast fifoBroadcast;
     public MessageHandler onMessageReceive;
 
-    public Listener(PerfectLink perfectLink, BestEffortBroadcast bestEffortBroadcast, UniformReliableBroadcast uniformReliableBroadcast) {
+    public Listener(PerfectLink perfectLink, BestEffortBroadcast bestEffortBroadcast, UniformReliableBroadcast uniformReliableBroadcast, FIFOBroadcast fifoBroadcast) {
         System.out.println("Listening ...");
         this.perfectLink = perfectLink;
         this.bestEffortBroadcast = bestEffortBroadcast;
         this.uniformReliableBroadcast = uniformReliableBroadcast;
+        this.fifoBroadcast = fifoBroadcast;
     }
 
     public void Start() throws IOException {
@@ -90,18 +92,25 @@ public class Listener {
 
             // DELIVER MESSAGE ACCORDING TO PROTOCOLS
             try {
-                boolean delivered = false;
                 if (protocol == ProtocolTypeEnum.PerfectLink.ordinal()) {
-                    delivered = perfectLink.Deliver(message, content, portReceived, addressReceived);
+                    perfectLink.Deliver(message, content, portReceived, addressReceived);
                 }
                 else if (protocol == ProtocolTypeEnum.BestEffortBroadcast.ordinal()) {
-                    delivered = bestEffortBroadcast.Deliver(message, content, portReceived, addressReceived);
+                    bestEffortBroadcast.Deliver(message, content, portReceived, addressReceived);
                 }
                 else if (protocol == ProtocolTypeEnum.UniformReliableBroadcast.ordinal()) {
                     int originalProcessId = messageArray[4];
                     int originalMessageId = messageArray[5];
                     Message messageOriginal = new Message(originalMessageId, originalProcessId);
-                    delivered = uniformReliableBroadcast.Deliver(message, messageOriginal,content, portReceived, addressReceived);
+                    int fifoId = messageArray[6];
+                    uniformReliableBroadcast.Deliver(message, messageOriginal,content, portReceived, addressReceived, fifoId);
+                }
+                else if(protocol == ProtocolTypeEnum.FIFOBroadcast.ordinal()) {
+                    int originalProcessId = messageArray[4];
+                    int originalMessageId = messageArray[5];
+                    Message messageOriginal = new Message(originalMessageId, originalProcessId);
+                    int fifoId = messageArray[6];
+                    fifoBroadcast.Deliver(message, messageOriginal,content, portReceived, addressReceived, fifoId);
                 }
                 else {
                     System.out.println("Unknown protocol " + protocol);

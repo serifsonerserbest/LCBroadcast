@@ -1,4 +1,5 @@
 import BestEffordBroadcast.BestEffortBroadcast;
+import FIFOBroadcast.FIFOBroadcast;
 import Listener.Listener;
 import PerfectLink.PerfectLink;
 import Process.Process;
@@ -37,18 +38,23 @@ public class Da_proc {
             uniformReliableBroadcast.Broadcast(1);
         }
     }
+    private static void TestSendFIFO(FIFOBroadcast fifoBroadcast) throws UnknownHostException {
+        for (int x = 0; x < 3; x++){
+            fifoBroadcast.Broadcast(1);
+        }
+    }
 
     public static void main(String[] args) throws InterruptedException, IOException {
 
-        int processId = Integer.parseInt(args[0]);
-        String membershipFileName = args[1];
+        int processId = 3;
+        String membershipFileName = "membership.txt";
 
         Process.getInstance().Init(processId, membershipFileName);
 
         PerfectLink perfectLink = new PerfectLink();
         BestEffortBroadcast bestEffortBroadcast = new BestEffortBroadcast();
-        UniformReliableBroadcast uniformReliableBroadcast = UniformReliableBroadcast.getInst();
-
+        UniformReliableBroadcast uniformReliableBroadcast = new UniformReliableBroadcast();
+        FIFOBroadcast fifoBroadcast = FIFOBroadcast.getInst();
         /*long startTime = System.currentTimeMillis();
 
         Runtime.getRuntime().addShutdownHook(new Thread()
@@ -63,7 +69,7 @@ public class Da_proc {
         });*/
 
         new Thread(()->{
-            Listener l = new Listener(perfectLink, bestEffortBroadcast, uniformReliableBroadcast);
+            Listener l = new Listener(perfectLink, bestEffortBroadcast, uniformReliableBroadcast, fifoBroadcast);
             l.onMessageReceive = (x)->{System.out.println("Da_proc handler message content" + x);};
             try {
                 l.Start();
@@ -72,12 +78,12 @@ public class Da_proc {
             }
         }).start();
 
-        //Thread.sleep(20000);
+        Thread.sleep(20000);
 
         //TestSendPL(perfectLink);
         //TestSendBE(bestEffortBroadcast);
         //TestSendUR(uniformReliableBroadcast);
-
+        TestSendFIFO(fifoBroadcast);
         Thread.sleep(100000);
         Process.getInstance().Logger.WriteLogToFile();
         System.out.println("Log File created");

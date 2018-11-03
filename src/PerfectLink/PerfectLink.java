@@ -27,18 +27,22 @@ public class PerfectLink {
         int id = SendEvent.NextId();
 
         //System.out.println("PL: " + Process.Process.getInstance().Id + " Message #" + id + " is sent");
-        sendEvent.SendMessage(content, destAddress, destPort, ProtocolTypeEnum.PerfectLink, 0 , 0, id);
+        sendEvent.SendMessage(content, destAddress, destPort, ProtocolTypeEnum.PerfectLink, 0 , 0, id, 0);
     }
     /** For BestEffordBroadcast */
     public synchronized void Send(int content, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int messageId){
-        sendEvent.SendMessage(content, destAddress, destPort, protocol, 0 , 0, messageId);
+        sendEvent.SendMessage(content, destAddress, destPort, protocol, 0 , 0, messageId, 0);
     }
     /** For UniformReliableBroadcast */
     public synchronized void Send(int content, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int messageId){
         //System.out.println("PL: " + Process.Process.getInstance().Id + " Message #" + messageId + " is sent");
-        sendEvent.SendMessage(content, destAddress, destPort, protocol, originalProcessId, originalMessageId, messageId );
+        sendEvent.SendMessage(content, destAddress, destPort, protocol, originalProcessId, originalMessageId, messageId, 0);
     }
-
+    //For FIFOBroadcast
+    public synchronized void Send(int content, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int messageId, int fifoId){
+        //System.out.println("PL: " + Process.Process.getInstance().Id + " Message #" + messageId + " is sent");
+        sendEvent.SendMessage(content, destAddress, destPort, protocol, originalProcessId, originalMessageId, messageId, fifoId);
+    }
 
     public synchronized boolean Deliver(Message message, int content, int port, InetAddress address) throws IOException {
 

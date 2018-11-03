@@ -1,5 +1,6 @@
 package Process;
 
+import FIFOBroadcast.FIFOBroadcast;
 import Models.ProcessModel;
 import UniformReliableBroadcast.UniformReliableBroadcast;
 import sun.misc.SignalHandler;
@@ -114,7 +115,7 @@ public class Process {
     {
         return sig -> {
             System.out.println("USR2");
-            UniformReliableBroadcast.getInst().Broadcast(1);
+            FIFOBroadcast.getInst().Broadcast(1);
         };
     }
     //endregion
