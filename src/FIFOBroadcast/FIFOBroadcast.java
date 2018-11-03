@@ -35,14 +35,14 @@ public class FIFOBroadcast {
     }
 
 
-    public void Broadcast(int content){
+    public synchronized void Broadcast(int content){
         lsn ++;
         System.out.println("b " +  lsn);
         uniformReliableBroadcast.Broadcast(content, lsn);
         Process.getInstance().Logger.WriteToLog("b " +  lsn);
     }
 
-    public void Deliver(Message message, Message originalMessage, int content, int portReceived, InetAddress addressReceived, int fifoId) throws IOException {
+    public synchronized void Deliver(Message message, Message originalMessage, int content, int portReceived, InetAddress addressReceived, int fifoId) throws IOException {
         //System.out.println("Inside deliver");
         if(uniformReliableBroadcast.Deliver(message, originalMessage, content, portReceived, addressReceived, fifoId)) {
             //System.out.println("URB Delivered");

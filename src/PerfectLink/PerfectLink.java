@@ -26,7 +26,7 @@ public class PerfectLink {
     }
 
     /** For PerfectLink */
-    public void Send(int content, InetAddress destAddress, int destPort){
+    public synchronized void Send(int content, InetAddress destAddress, int destPort){
 
         int id = SendEvent.NextId();
 
@@ -34,21 +34,21 @@ public class PerfectLink {
         sendEvent.SendMessage(content, destAddress, destPort, ProtocolTypeEnum.PerfectLink, 0 , 0, id, 0);
     }
     /** For BestEffordBroadcast */
-    public  void Send(int content, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int messageId){
+    public synchronized void Send(int content, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int messageId){
         sendEvent.SendMessage(content, destAddress, destPort, protocol, 0 , 0, messageId, 0);
     }
     /** For UniformReliableBroadcast */
-    public void Send(int content, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int messageId){
+    public synchronized void Send(int content, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int messageId){
         //System.out.println("PL: " + Process.Process.getInstance().Id + " Message #" + messageId + " is sent");
         sendEvent.SendMessage(content, destAddress, destPort, protocol, originalProcessId, originalMessageId, messageId, 0);
     }
     //For FIFOBroadcast
-    public void Send(int content, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int messageId, int fifoId){
+    public synchronized void Send(int content, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int messageId, int fifoId){
         //System.out.println("PL: " + Process.Process.getInstance().Id + " Message #" + messageId + " is sent");
         sendEvent.SendMessage(content, destAddress, destPort, protocol, originalProcessId, originalMessageId, messageId, fifoId);
     }
 
-    public boolean Deliver(Message message, int content, int port, InetAddress address) throws IOException {
+    public synchronized boolean Deliver(Message message, int content, int port, InetAddress address) throws IOException {
 
         if (receivedMessages.contains(message)) {
             //System.out.println("Message #" + message.getMessageId() + ": " + content + " duplicate");

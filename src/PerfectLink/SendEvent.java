@@ -14,7 +14,7 @@ import java.util.concurrent.Executors;
 
 public class SendEvent {
 
-    static final int timeoutVal = 300;		// 300ms until timeout
+    static final int timeoutVal = 3000;		// 300ms until timeout
     public static int messageId = 0;
 
     public BaseHandler receiveAcknowledgeHandler;
@@ -28,7 +28,7 @@ public class SendEvent {
        return ++messageId;
     }
 
-    public void SendMessage(int content, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int messageId, int fifoId)
+    public synchronized void SendMessage(int content, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int messageId, int fifoId)
 
     {
 
