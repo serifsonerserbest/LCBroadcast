@@ -12,6 +12,7 @@ public class DiagnosticSignalHandler implements SignalHandler {
         Signal.handle(signal, diagnosticSignalHandler);
         diagnosticSignalHandler.setHandler(handler);
     }
+
     private SignalHandler handler;
 
     private DiagnosticSignalHandler() {

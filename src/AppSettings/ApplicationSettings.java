@@ -7,7 +7,7 @@ public class ApplicationSettings {
     public final boolean isDebug;
 
     private ApplicationSettings() {
-         isDebug = java.lang.management.ManagementFactory.getRuntimeMXBean().
+        isDebug = java.lang.management.ManagementFactory.getRuntimeMXBean().
                 getInputArguments().toString().indexOf("-agentlib:jdwp") > 0;
     }
 

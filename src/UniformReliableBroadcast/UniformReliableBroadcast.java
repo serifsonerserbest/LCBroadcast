@@ -32,7 +32,7 @@ public class UniformReliableBroadcast {
 
     }
 
-    public synchronized void Broadcast(int content){
+    public synchronized void Broadcast(int content) {
 
         int messageId = SendEvent.NextId();
         int processId = Process.getInstance().Id;
@@ -43,7 +43,7 @@ public class UniformReliableBroadcast {
     }
 
     //for FIFOBroadcast
-    public  synchronized void Broadcast(int content, int fifoId) {
+    public synchronized void Broadcast(int content, int fifoId) {
 
         int messageId = SendEvent.NextId();
         int processId = Process.getInstance().Id;
@@ -52,22 +52,22 @@ public class UniformReliableBroadcast {
         bestEffortBroadcast.Broadcast(content, processId, messageId, ProtocolTypeEnum.FIFOBroadcast, messageId, fifoId);
     }
 
-    public synchronized  boolean Deliver(MessageModel message, MessageModel originalMessage, int content, int portReceived, InetAddress addressReceived, int fifoId) throws IOException {
+    public synchronized boolean Deliver(MessageModel message, MessageModel originalMessage, int content, int portReceived, InetAddress addressReceived, int fifoId) throws IOException {
 
         boolean deliver = false;
-        if(bestEffortBroadcast.Deliver(message, content, portReceived, addressReceived)){
-           int count = ack.getOrDefault(originalMessage,0);
+        if (bestEffortBroadcast.Deliver(message, content, portReceived, addressReceived)) {
+            int count = ack.getOrDefault(originalMessage, 0);
             ack.put(originalMessage, count + 1);
 
-            if(!forward.contains(originalMessage)){
+            if (!forward.contains(originalMessage)) {
                 forward.add(originalMessage);
                 int id = SendEvent.NextId();
-                bestEffortBroadcast.Broadcast(content,originalMessage.getProcessId(), originalMessage.getMessageId(),
+                bestEffortBroadcast.Broadcast(content, originalMessage.getProcessId(), originalMessage.getMessageId(),
                         ProtocolTypeEnum.FIFOBroadcast, id, fifoId);
             }
         }
-        if(forward.contains(originalMessage)){
-            if(canDeliver(originalMessage) && !delivered.contains(originalMessage)){
+        if (forward.contains(originalMessage)) {
+            if (canDeliver(originalMessage) && !delivered.contains(originalMessage)) {
                 delivered.add(originalMessage);
                 deliver = true;
             }
@@ -75,10 +75,10 @@ public class UniformReliableBroadcast {
         return deliver;
     }
 
-    public synchronized boolean canDeliver(MessageModel originalMessage){
+    public synchronized boolean canDeliver(MessageModel originalMessage) {
 
         int numOfProc = Process.getInstance().processes.size();
-        int count = ack.getOrDefault(originalMessage,0);
+        int count = ack.getOrDefault(originalMessage, 0);
         return count > numOfProc / 2;
     }
 }

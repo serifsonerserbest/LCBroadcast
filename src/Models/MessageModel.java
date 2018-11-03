@@ -11,15 +11,15 @@ public class MessageModel {
         this.content = content;
     }
 
-    public int getMessageId(){
+    public int getMessageId() {
         return messageId;
     }
 
-    public int getProcessId(){
+    public int getProcessId() {
         return processId;
     }
 
-    public int getContent(){
+    public int getContent() {
         return content;
     }
 
@@ -31,14 +31,16 @@ public class MessageModel {
         MessageModel message = (MessageModel) o;
         return hashCode() == message.hashCode();
     }
+
     public int cantorPairing() {
 
         int sum = this.messageId + this.processId;
-        if(sum % 2 == 0) sum = sum / 2 * (sum + 1);
+        if (sum % 2 == 0) sum = sum / 2 * (sum + 1);
         else sum = (sum + 1) / 2 * sum;
         int cantorValue = sum + this.processId;
         return cantorValue;
     }
+
     @Override
     public int hashCode() {
         return this.cantorPairing();

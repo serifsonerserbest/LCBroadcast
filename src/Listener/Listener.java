@@ -90,25 +90,21 @@ public class Listener {
             try {
                 if (protocol == ProtocolTypeEnum.PerfectLink.ordinal()) {
                     perfectLink.Deliver(message, content, portReceived, addressReceived);
-                }
-                else if (protocol == ProtocolTypeEnum.BestEffortBroadcast.ordinal()) {
+                } else if (protocol == ProtocolTypeEnum.BestEffortBroadcast.ordinal()) {
                     bestEffortBroadcast.Deliver(message, content, portReceived, addressReceived);
-                }
-                else if (protocol == ProtocolTypeEnum.UniformReliableBroadcast.ordinal()) {
+                } else if (protocol == ProtocolTypeEnum.UniformReliableBroadcast.ordinal()) {
                     int originalProcessId = messageArray[4];
                     int originalMessageId = messageArray[5];
 
                     MessageModel messageOriginal = new MessageModel(originalMessageId, originalProcessId, content);
-                    uniformReliableBroadcast.Deliver(message, messageOriginal,content, portReceived, addressReceived, 0);
-                }
-                else if(protocol == ProtocolTypeEnum.FIFOBroadcast.ordinal()) {
+                    uniformReliableBroadcast.Deliver(message, messageOriginal, content, portReceived, addressReceived, 0);
+                } else if (protocol == ProtocolTypeEnum.FIFOBroadcast.ordinal()) {
                     int originalProcessId = messageArray[4];
                     int originalMessageId = messageArray[5];
                     MessageModel messageOriginal = new MessageModel(originalMessageId, originalProcessId, content);
                     int fifoId = messageArray[6];
-                    fifoBroadcast.Deliver(message, messageOriginal,content, portReceived, addressReceived, fifoId);
-                }
-                else {
+                    fifoBroadcast.Deliver(message, messageOriginal, content, portReceived, addressReceived, fifoId);
+                } else {
                     System.out.println("Unknown protocol " + protocol);
                     return;
                 }

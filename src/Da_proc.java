@@ -13,25 +13,25 @@ import java.net.UnknownHostException;
 public class Da_proc {
 
     private static void TestSendPL(PerfectLink perfectLink) throws UnknownHostException {
-        for (int x = 0; x < 1000; x++){
+        for (int x = 0; x < 1000; x++) {
             perfectLink.Send(x, InetAddress.getByName("127.0.0.1"), 20001);
         }
     }
 
     private static void TestSendBE(BestEffortBroadcast bestEffortBroadcast) throws UnknownHostException {
-        for (int x = 0; x < 1000; x++){
+        for (int x = 0; x < 1000; x++) {
             bestEffortBroadcast.Broadcast(1);
         }
     }
 
     private static void TestSendUR(UniformReliableBroadcast uniformReliableBroadcast) throws UnknownHostException {
-        for (int x = 0; x < 1000; x++){
+        for (int x = 0; x < 1000; x++) {
             uniformReliableBroadcast.Broadcast(1);
         }
     }
 
     private static void TestSendFIFO(FIFOBroadcast fifoBroadcast) throws UnknownHostException {
-        for (int x = 0; x < 1000; x++){
+        for (int x = 0; x < 1000; x++) {
             fifoBroadcast.Broadcast(1);
         }
     }
@@ -43,12 +43,11 @@ public class Da_proc {
         String membershipFileName;
         int amountToSend;
 
-        if(ApplicationSettings.getInstance().isDebug) {
+        if (ApplicationSettings.getInstance().isDebug) {
             processId = 3;
             membershipFileName = "membership.txt";
             amountToSend = 0;
-        }
-        else {
+        } else {
             processId = Integer.parseInt(args[0]);
             membershipFileName = args[1];
             amountToSend = Integer.parseInt(args[2]);
@@ -64,7 +63,7 @@ public class Da_proc {
         FIFOBroadcast fifoBroadcast = FIFOBroadcast.getInst();
 
         // INITIALIZE LISTENER
-        new Thread(()->{
+        new Thread(() -> {
             Listener l = new Listener(perfectLink, bestEffortBroadcast, uniformReliableBroadcast, fifoBroadcast);
 
             try {
@@ -86,7 +85,7 @@ public class Da_proc {
         Process.getInstance().Logger.WriteLogToFile();
         System.out.println("Log File created");
 
-        while(true){
+        while (true) {
             Thread.sleep(10000);
         }
     }

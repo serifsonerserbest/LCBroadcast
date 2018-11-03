@@ -13,7 +13,7 @@ import java.util.concurrent.Executors;
 
 public class SendEvent {
 
-    static final int timeoutVal = 3000;		// 300ms until timeout
+    static final int timeoutVal = 3000;        // 300ms until timeout
     public static int messageId = 0;
 
     static ExecutorService service = Executors.newCachedThreadPool();
@@ -21,9 +21,8 @@ public class SendEvent {
     public SendEvent() {
     }
 
-    public synchronized static int NextId()
-    {
-       return ++messageId;
+    public synchronized static int NextId() {
+        return ++messageId;
     }
 
     public synchronized void SendMessage(int content, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int messageId, int fifoId) {
@@ -55,7 +54,7 @@ public class SendEvent {
         int fifoId;
 
         // ThreadSend constructor
-        public ThreadSend(DatagramSocket socketOut, int destPort, InetAddress destAddress, int content, int messageId, ProtocolTypeEnum protocol,  int originalProcessId, int originalMessageId, int fifoId) {
+        public ThreadSend(DatagramSocket socketOut, int destPort, InetAddress destAddress, int content, int messageId, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int fifoId) {
             this.socketOut = socketOut;
             this.destPort = destPort;
             this.destAddress = destAddress;
@@ -78,7 +77,7 @@ public class SendEvent {
             byte[] out_data = byteBuffer.array();
 
             DatagramPacket sendingPacket = new DatagramPacket(out_data, out_data.length, destAddress, destPort);
-            DatagramPacket receivePacket =  new DatagramPacket(in_data, in_data.length);
+            DatagramPacket receivePacket = new DatagramPacket(in_data, in_data.length);
 
             try {
                 SendMessage(sendingPacket, receivePacket, -1);
@@ -94,7 +93,7 @@ public class SendEvent {
         private boolean SendMessage(DatagramPacket sendingPacket, DatagramPacket receivePacket, int attempts) throws IOException {
 
             int counter = 0;
-            while(attempts == -1 || counter <  attempts) {
+            while (attempts == -1 || counter < attempts) {
 
                 socketOut.send(sendingPacket);
                 try {
@@ -106,7 +105,7 @@ public class SendEvent {
                         return true;
                     }
                 } catch (SocketTimeoutException e) {
-                    System.out.println("Timeout reached: From Process" + Process.getInstance().Id + " to Port:" + destPort+ e);
+                    System.out.println("Timeout reached: From Process" + Process.getInstance().Id + " to Port:" + destPort + e);
                 }
                 ++counter;
             }

@@ -22,27 +22,35 @@ public class PerfectLink {
         receivedMessages = new HashSet<>();
     }
 
-    /** For PerfectLink */
-    public synchronized void Send(int content, InetAddress destAddress, int destPort){
+    /**
+     * For PerfectLink
+     */
+    public synchronized void Send(int content, InetAddress destAddress, int destPort) {
 
         int id = SendEvent.NextId();
-        sendEvent.SendMessage(content, destAddress, destPort, ProtocolTypeEnum.PerfectLink, 0 , 0, id, 0);
+        sendEvent.SendMessage(content, destAddress, destPort, ProtocolTypeEnum.PerfectLink, 0, 0, id, 0);
     }
 
-    /** For BestEffordBroadcast */
-    public synchronized void Send(int content, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int messageId){
+    /**
+     * For BestEffordBroadcast
+     */
+    public synchronized void Send(int content, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int messageId) {
 
-        sendEvent.SendMessage(content, destAddress, destPort, protocol, 0 , 0, messageId, 0);
+        sendEvent.SendMessage(content, destAddress, destPort, protocol, 0, 0, messageId, 0);
     }
 
-    /** For UniformReliableBroadcast */
-    public synchronized void Send(int content, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int messageId){
+    /**
+     * For UniformReliableBroadcast
+     */
+    public synchronized void Send(int content, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int messageId) {
 
         sendEvent.SendMessage(content, destAddress, destPort, protocol, originalProcessId, originalMessageId, messageId, 0);
     }
 
-    /** For FIFOBroadcast */
-    public synchronized void Send(int content, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int messageId, int fifoId){
+    /**
+     * For FIFOBroadcast
+     */
+    public synchronized void Send(int content, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int messageId, int fifoId) {
 
         sendEvent.SendMessage(content, destAddress, destPort, protocol, originalProcessId, originalMessageId, messageId, fifoId);
     }

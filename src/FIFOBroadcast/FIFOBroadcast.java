@@ -25,39 +25,38 @@ public class FIFOBroadcast {
         pending = new HashMap<>();
         int numberOfProcesses = Process.getInstance().processes.size();
         next = new int[numberOfProcesses + 1];
-        for(int i = 0; i <= numberOfProcesses; ++ i)
+        for (int i = 0; i <= numberOfProcesses; ++i)
             next[i] = 1;
     }
 
-    public static FIFOBroadcast getInst(){
+    public static FIFOBroadcast getInst() {
 
         return fifoBroadcast;
     }
 
-    public synchronized void Broadcast(int content){
+    public synchronized void Broadcast(int content) {
 
-        lsn ++;
-        System.out.println("b " +  lsn);
+        lsn++;
+        System.out.println("b " + lsn);
         uniformReliableBroadcast.Broadcast(content, lsn);
-        Process.getInstance().Logger.WriteToLog("b " +  lsn);
+        Process.getInstance().Logger.WriteToLog("b " + lsn);
     }
 
     public synchronized void Deliver(MessageModel message, MessageModel originalMessage, int content, int portReceived, InetAddress addressReceived, int fifoId) throws IOException {
 
-        if(uniformReliableBroadcast.Deliver(message, originalMessage, content, portReceived, addressReceived, fifoId)) {
+        if (uniformReliableBroadcast.Deliver(message, originalMessage, content, portReceived, addressReceived, fifoId)) {
             int originalProcessId = originalMessage.getProcessId();
             MessageModel fifoMessage = new MessageModel(fifoId, originalProcessId, content);
             pending.put(fifoMessage, originalMessage.getMessageId());
-            while(true) {
+            while (true) {
                 int nextId = next[originalProcessId];
                 MessageModel fifoKey = new MessageModel(nextId, originalProcessId, content);
-                if(pending.containsKey(fifoKey)) {
+                if (pending.containsKey(fifoKey)) {
                     pending.remove(fifoKey);
-                    System.out.println("d " +  originalMessage.getProcessId() + " " + next[originalProcessId]);
-                    Process.getInstance().Logger.WriteToLog("d " +  originalMessage.getProcessId() + " " + next[originalProcessId]);
-                    next[originalProcessId] ++;
-                }
-                else break;
+                    System.out.println("d " + originalMessage.getProcessId() + " " + next[originalProcessId]);
+                    Process.getInstance().Logger.WriteToLog("d " + originalMessage.getProcessId() + " " + next[originalProcessId]);
+                    next[originalProcessId]++;
+                } else break;
             }
         }
     }
