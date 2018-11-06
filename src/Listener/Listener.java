@@ -28,7 +28,7 @@ public class Listener {
     FIFOBroadcast fifoBroadcast;
 
     public Listener(PerfectLink perfectLink, BestEffortBroadcast bestEffortBroadcast, UniformReliableBroadcast uniformReliableBroadcast, FIFOBroadcast fifoBroadcast) {
-        System.out.println("Listening ...");
+        //System.out.println("Listening ...");
         this.perfectLink = perfectLink;
         this.bestEffortBroadcast = bestEffortBroadcast;
         this.uniformReliableBroadcast = uniformReliableBroadcast;

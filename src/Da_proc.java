@@ -73,17 +73,20 @@ public class Da_proc {
             }
         }).start();
 
-        // TEST PROTOCOL
-        Thread.sleep(20000);
-        //TestSendPL(perfectLink);
-        //TestSendBE(bestEffortBroadcast);
-        //TestSendUR(uniformReliableBroadcast);
-        TestSendFIFO(fifoBroadcast);
+        if (ApplicationSettings.getInstance().isDebug) {
 
-        Thread.sleep(100000);
-        System.out.println("Creating Log File");
-        Process.getInstance().Logger.WriteLogToFile();
-        System.out.println("Log File created");
+            // TEST PROTOCOL
+            Thread.sleep(20000);
+            //TestSendPL(perfectLink);
+            //TestSendBE(bestEffortBroadcast);
+            //TestSendUR(uniformReliableBroadcast);
+            TestSendFIFO(fifoBroadcast);
+
+            Thread.sleep(100000);
+            System.out.println("Creating Log File");
+            Process.getInstance().Logger.WriteLogToFile();
+            System.out.println("Log File created");
+        }
 
         while (true) {
             Thread.sleep(10000);
