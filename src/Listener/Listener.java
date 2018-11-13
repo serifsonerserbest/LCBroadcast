@@ -84,7 +84,7 @@ public class Listener {
             int protocol = messageArray[1];
             int content = messageArray[2];
             int processId = messageArray[3];
-            MessageModel message = new MessageModel(messageId, processId, content);
+            MessageModel message = new MessageModel(messageId, processId);
 
             // DELIVER THE MESSAGE ACCORDING TO PROTOCOL
             try {
@@ -95,14 +95,15 @@ public class Listener {
                 } else if (protocol == ProtocolTypeEnum.UniformReliableBroadcast.ordinal()) {
                     int originalProcessId = messageArray[4];
                     int originalMessageId = messageArray[5];
+                    MessageModel messageOriginal = new MessageModel(originalMessageId, originalProcessId);
 
-                    MessageModel messageOriginal = new MessageModel(originalMessageId, originalProcessId, content);
                     uniformReliableBroadcast.Deliver(message, messageOriginal, content, portReceived, addressReceived, 0);
                 } else if (protocol == ProtocolTypeEnum.FIFOBroadcast.ordinal()) {
                     int originalProcessId = messageArray[4];
                     int originalMessageId = messageArray[5];
-                    MessageModel messageOriginal = new MessageModel(originalMessageId, originalProcessId, content);
+                    MessageModel messageOriginal = new MessageModel(originalMessageId, originalProcessId);
                     int fifoId = messageArray[6];
+
                     fifoBroadcast.Deliver(message, messageOriginal, content, portReceived, addressReceived, fifoId);
                 } else {
                     System.out.println("Unknown protocol " + protocol);

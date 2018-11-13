@@ -1,5 +1,6 @@
 package PerfectLink;
 
+import AppSettings.ApplicationSettings;
 import Enums.ProtocolTypeEnum;
 import Process.Process;
 
@@ -13,7 +14,6 @@ import java.util.concurrent.Executors;
 
 public class SendEvent {
 
-    static final int timeoutVal = 3000;        // 300ms until timeout
     public static int messageId = 0;
 
     static ExecutorService service = Executors.newCachedThreadPool();
@@ -30,11 +30,9 @@ public class SendEvent {
         DatagramSocket socketOut;
         try {
             socketOut = new DatagramSocket();                // outgoing channel
-            socketOut.setSoTimeout(timeoutVal);
+            socketOut.setSoTimeout(ApplicationSettings.getInstance().timeoutVal);
             service.submit(new ThreadSend(socketOut, destPort, destAddress, content, messageId, protocol, originalProcessId, originalMessageId, fifoId));
 
-            //ThreadSend th_out = new ThreadSend(socketOut, destPort, destAddress, message, messageId, receiveAcknowledgeHandler);
-            //th_out.start();
         } catch (SocketException e) {
             e.printStackTrace();
         }

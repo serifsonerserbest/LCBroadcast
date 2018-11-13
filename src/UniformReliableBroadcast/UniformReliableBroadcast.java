@@ -23,9 +23,6 @@ public class UniformReliableBroadcast {
     public UniformReliableBroadcast() {
 
         bestEffortBroadcast = new BestEffortBroadcast();
-        ack = new HashMap<MessageModel, Integer>();
-        delivered = new HashSet<MessageModel>();
-        forward = new HashSet<MessageModel>();
         ack = new HashMap<>();
         delivered = new HashSet<>();
         forward = new HashSet<>();
@@ -36,7 +33,7 @@ public class UniformReliableBroadcast {
 
         int messageId = SendEvent.NextId();
         int processId = Process.getInstance().Id;
-        MessageModel message = new MessageModel(messageId, processId, content);
+        MessageModel message = new MessageModel(messageId, processId);
         forward.add(message);
 
         bestEffortBroadcast.Broadcast(content, processId, messageId, ProtocolTypeEnum.UniformReliableBroadcast, messageId);
@@ -47,7 +44,7 @@ public class UniformReliableBroadcast {
 
         int messageId = SendEvent.NextId();
         int processId = Process.getInstance().Id;
-        MessageModel message = new MessageModel(messageId, processId, content);
+        MessageModel message = new MessageModel(messageId, processId);
         forward.add(message);
         bestEffortBroadcast.Broadcast(content, processId, messageId, ProtocolTypeEnum.FIFOBroadcast, messageId, fifoId);
     }
