@@ -20,7 +20,7 @@ public class BestEffortBroadcast {
         perfectlink = new PerfectLink();
     }
 
-    public synchronized void Broadcast(int message) {
+    public void Broadcast(int message) {
 
         ArrayList<ProcessModel> processes = Process.getInstance().processes;
         int id = SendEvent.NextId();
@@ -31,7 +31,7 @@ public class BestEffortBroadcast {
     }
 
     //** For UniformReliableBroadcast *//*
-    public synchronized void Broadcast(int content, int originalProcessId, int originalMessageId, ProtocolTypeEnum protocol, int messageId) {
+    public void Broadcast(int content, int originalProcessId, int originalMessageId, ProtocolTypeEnum protocol, int messageId) {
 
         ArrayList<ProcessModel> processes = Process.getInstance().processes;
         for (int i = 0; i < processes.size(); i++) {
@@ -40,7 +40,7 @@ public class BestEffortBroadcast {
     }
 
     //** For FIFOBroadcast *//*
-    public synchronized void Broadcast(int content, int originalProcessId, int originalMessageId, ProtocolTypeEnum protocol, int messageId, int fifoId) {
+    public void Broadcast(int content, int originalProcessId, int originalMessageId, ProtocolTypeEnum protocol, int messageId, int fifoId) {
 
         ArrayList<ProcessModel> processes = Process.getInstance().processes;
         for (int i = 0; i < processes.size(); i++) {
@@ -48,7 +48,7 @@ public class BestEffortBroadcast {
         }
     }
 
-    public synchronized boolean Deliver(MessageModel message, int content, int portReceived, InetAddress addressReceived) throws IOException {
+    public boolean Deliver(MessageModel message, int content, int portReceived, InetAddress addressReceived) throws IOException {
 
         return perfectlink.Deliver(message, content, portReceived, addressReceived);
     }

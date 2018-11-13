@@ -15,14 +15,14 @@ public class Logger {
         outputFileName = "da_proc_" + processId + ".out";
     }
 
-    public synchronized void WriteToLog(final String message) {
+    public void WriteToLog(final String message) {
 
         if (message != null && !message.trim().isEmpty()) {
             Log.add(message);
         }
     }
 
-    public synchronized void WriteLogToFile() {
+    public void WriteLogToFile() {
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputFileName))) {
             for (String message : Log) {

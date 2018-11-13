@@ -18,6 +18,7 @@ import java.nio.IntBuffer;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 public class Listener {
     DatagramSocket socketIn;
@@ -43,7 +44,8 @@ public class Listener {
         byte[] messageReceived;
         int portReceived;
 
-        ExecutorService threadPool = Executors.newCachedThreadPool();
+        ThreadPoolExecutor  threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(10 );
+//Executors.newCachedThreadPool();
 
         while (true) {
             //receiving packet

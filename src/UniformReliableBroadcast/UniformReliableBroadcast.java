@@ -29,7 +29,7 @@ public class UniformReliableBroadcast {
 
     }
 
-    public synchronized void Broadcast(int content) {
+    public void Broadcast(int content) {
 
         int messageId = SendEvent.NextId();
         int processId = Process.getInstance().Id;
@@ -40,7 +40,7 @@ public class UniformReliableBroadcast {
     }
 
     //for FIFOBroadcast
-    public synchronized void Broadcast(int content, int fifoId) {
+    public void Broadcast(int content, int fifoId) {
 
         int messageId = SendEvent.NextId();
         int processId = Process.getInstance().Id;
@@ -49,7 +49,7 @@ public class UniformReliableBroadcast {
         bestEffortBroadcast.Broadcast(content, processId, messageId, ProtocolTypeEnum.FIFOBroadcast, messageId, fifoId);
     }
 
-    public synchronized boolean Deliver(MessageModel message, MessageModel originalMessage, int content, int portReceived, InetAddress addressReceived, int fifoId) throws IOException {
+    public boolean Deliver(MessageModel message, MessageModel originalMessage, int content, int portReceived, InetAddress addressReceived, int fifoId) throws IOException {
 
         boolean deliver = false;
         if (bestEffortBroadcast.Deliver(message, content, portReceived, addressReceived)) {
@@ -72,7 +72,7 @@ public class UniformReliableBroadcast {
         return deliver;
     }
 
-    public synchronized boolean canDeliver(MessageModel originalMessage) {
+    public boolean canDeliver(MessageModel originalMessage) {
 
         int numOfProc = Process.getInstance().processes.size();
         int count = ack.getOrDefault(originalMessage, 0);

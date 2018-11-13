@@ -10,22 +10,26 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class SendEvent {
 
-    public static int messageId = 0;
+    public static AtomicInteger messageId ;
 
-    static ExecutorService service = Executors.newCachedThreadPool();
+    //static ExecutorService service = Executors.newCachedThreadPool();
+    static volatile ThreadPoolExecutor service = (ThreadPoolExecutor) Executors.newFixedThreadPool(50 );
 
     public SendEvent() {
+        messageId = new AtomicInteger(0);
     }
 
-    public synchronized static int NextId() {
-        return ++messageId;
+    public static int NextId() {
+        return messageId.incrementAndGet();
     }
 
-    public synchronized void SendMessage(int content, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int messageId, int fifoId) {
+    public void SendMessage(int content, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int messageId, int fifoId) {
 
         DatagramSocket socketOut;
         try {
@@ -84,7 +88,7 @@ public class SendEvent {
                 e.printStackTrace();
             } finally {
                 socketOut.close();        // close outgoing socket
-                //System.out.println("SendEvent: socketOut closed!");
+                System.out.println("SendEvent: socketOut closed!");
             }
         }
 
