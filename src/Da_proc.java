@@ -13,76 +13,59 @@ import java.net.UnknownHostException;
 public class Da_proc {
 
     private static void TestSendPL(PerfectLink perfectLink) throws UnknownHostException {
-        for (int x = 0; x < 10; x++){
+        for (int x = 0; x < 1000; x++) {
             perfectLink.Send(x, InetAddress.getByName("127.0.0.1"), 20001);
         }
     }
 
     private static void TestSendBE(BestEffortBroadcast bestEffortBroadcast) throws UnknownHostException {
-        bestEffortBroadcast.Broadcast(10);
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        for (int x = 0; x < 1000; x++) {
+            bestEffortBroadcast.Broadcast(1);
         }
-        bestEffortBroadcast.Broadcast(10);
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        bestEffortBroadcast.Broadcast(10);
     }
 
     private static void TestSendUR(UniformReliableBroadcast uniformReliableBroadcast) throws UnknownHostException {
-        for (int x = 0; x < 10000; x++){
+        for (int x = 0; x < 1000; x++) {
             uniformReliableBroadcast.Broadcast(1);
         }
     }
+
     private static void TestSendFIFO(FIFOBroadcast fifoBroadcast) throws UnknownHostException {
-        for (int x = 0; x < 10000; x++){
+        for (int x = 0; x < 1000; x++) {
             fifoBroadcast.Broadcast(1);
         }
     }
 
     public static void main(String[] args) throws InterruptedException, IOException {
 
+        //SYSTEM INPUTS
         int processId;
         String membershipFileName;
         int amountToSend;
-        if(ApplicationSettings.getInstance().isDebug) {
-            processId = 1;
+
+        if (ApplicationSettings.getInstance().isDebug) {
+            processId = 3;
             membershipFileName = "membership.txt";
             amountToSend = 0;
-        }
-        else {
+        } else {
             processId = Integer.parseInt(args[0]);
             membershipFileName = args[1];
             amountToSend = Integer.parseInt(args[2]);
         }
 
+        // PROCESS MEMBERSHIP FILE
         Process.getInstance().Init(processId, membershipFileName, amountToSend);
 
+        // INITIALIZE PROTOCOLS
         PerfectLink perfectLink = new PerfectLink();
         BestEffortBroadcast bestEffortBroadcast = new BestEffortBroadcast();
         UniformReliableBroadcast uniformReliableBroadcast = new UniformReliableBroadcast();
         FIFOBroadcast fifoBroadcast = FIFOBroadcast.getInst();
-        /*long startTime = System.currentTimeMillis();
 
-        Runtime.getRuntime().addShutdownHook(new Thread()
-        {
-            @Override
-            public void run()
-            {
-                long stopTime = System.currentTimeMillis();
-                long elapsedTime = stopTime - startTime;
-                System.out.println(elapsedTime);
-            }
-        });*/
-
-        new Thread(()->{
+        // INITIALIZE LISTENER
+        new Thread(() -> {
             Listener l = new Listener(perfectLink, bestEffortBroadcast, uniformReliableBroadcast, fifoBroadcast);
-            l.onMessageReceive = (x)->{System.out.println("Da_proc handler message content" + x);};
+
             try {
                 l.Start();
             } catch (IOException e) {
@@ -90,18 +73,23 @@ public class Da_proc {
             }
         }).start();
 
-        Thread.sleep(20000);
+        if (ApplicationSettings.getInstance().isDebug) {
 
-        //TestSendPL(perfectLink);
-        //TestSendBE(bestEffortBroadcast);
-        //TestSendUR(uniformReliableBroadcast);
-        TestSendFIFO(fifoBroadcast);
-        Thread.sleep(100000);
-        Process.getInstance().Logger.WriteLogToFile();
-        System.out.println("Log File created");
+            // TEST PROTOCOL
+            Thread.sleep(20000);
+            //TestSendPL(perfectLink);
+            //TestSendBE(bestEffortBroadcast);
+            //TestSendUR(uniformReliableBroadcast);
+            TestSendFIFO(fifoBroadcast);
 
-        while(true){
-            Thread.sleep(1000);
+            Thread.sleep(100000);
+            System.out.println("Creating Log File");
+            Process.getInstance().Logger.WriteLogToFile();
+            System.out.println("Log File created");
+        }
+
+        while (true) {
+            Thread.sleep(10000);
         }
     }
 }

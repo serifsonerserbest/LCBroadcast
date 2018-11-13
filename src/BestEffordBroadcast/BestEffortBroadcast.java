@@ -1,7 +1,7 @@
 package BestEffordBroadcast;
 
 import Enums.ProtocolTypeEnum;
-import Models.Message;
+import Models.MessageModel;
 import Models.ProcessModel;
 import PerfectLink.PerfectLink;
 import PerfectLink.SendEvent;
@@ -16,37 +16,40 @@ public class BestEffortBroadcast {
 
     private PerfectLink perfectlink;
 
-    public BestEffortBroadcast(){
+    public BestEffortBroadcast() {
         perfectlink = new PerfectLink();
     }
 
-    public synchronized void Broadcast(int message)
-    {
+    public synchronized void Broadcast(int message) {
+
         ArrayList<ProcessModel> processes = Process.getInstance().processes;
         int id = SendEvent.NextId();
-        //System.out.println("URB: " + Process.Process.getInstance().Id + " Broadcast Message #" + id);
+        //System.out.println("URB: " + Process.Process.getInstance().Id + " Broadcast MessageModel #" + id);
         for (int i = 0; i < processes.size(); i++) {
             perfectlink.Send(message, processes.get(i).address, processes.get(i).port, ProtocolTypeEnum.BestEffortBroadcast, id);
         }
     }
+
     //** For UniformReliableBroadcast *//*
-    public synchronized void Broadcast(int content, int originalProcessId, int originalMessageId, ProtocolTypeEnum protocol, int messageId )
-    {
+    public synchronized void Broadcast(int content, int originalProcessId, int originalMessageId, ProtocolTypeEnum protocol, int messageId) {
 
         ArrayList<ProcessModel> processes = Process.getInstance().processes;
         for (int i = 0; i < processes.size(); i++) {
-            perfectlink.Send(content, processes.get(i).address, processes.get(i).port, protocol, originalProcessId , originalMessageId, messageId);
+            perfectlink.Send(content, processes.get(i).address, processes.get(i).port, protocol, originalProcessId, originalMessageId, messageId);
         }
     }
+
     //** For FIFOBroadcast *//*
     public synchronized void Broadcast(int content, int originalProcessId, int originalMessageId, ProtocolTypeEnum protocol, int messageId, int fifoId) {
+
         ArrayList<ProcessModel> processes = Process.getInstance().processes;
         for (int i = 0; i < processes.size(); i++) {
-            perfectlink.Send(content, processes.get(i).address, processes.get(i).port, protocol, originalProcessId , originalMessageId, messageId, fifoId);
+            perfectlink.Send(content, processes.get(i).address, processes.get(i).port, protocol, originalProcessId, originalMessageId, messageId, fifoId);
         }
     }
-    
-    public synchronized boolean Deliver(Message message, int content, int portReceived, InetAddress addressReceived) throws IOException {
+
+    public synchronized boolean Deliver(MessageModel message, int content, int portReceived, InetAddress addressReceived) throws IOException {
+
         return perfectlink.Deliver(message, content, portReceived, addressReceived);
     }
 }

@@ -6,11 +6,13 @@ import sun.misc.SignalHandler;
 public class DiagnosticSignalHandler implements SignalHandler {
 
     public static void install(String signalName, SignalHandler handler) {
+
         Signal signal = new Signal(signalName);
         DiagnosticSignalHandler diagnosticSignalHandler = new DiagnosticSignalHandler();
         Signal.handle(signal, diagnosticSignalHandler);
         diagnosticSignalHandler.setHandler(handler);
     }
+
     private SignalHandler handler;
 
     private DiagnosticSignalHandler() {
