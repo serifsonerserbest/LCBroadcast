@@ -16,10 +16,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class SendEvent {
 
-    public static AtomicInteger messageId ;
+    public volatile static AtomicInteger messageId ;
 
-    //static ExecutorService service = Executors.newCachedThreadPool();
-    static volatile ThreadPoolExecutor service = (ThreadPoolExecutor) Executors.newFixedThreadPool(50 );
+    volatile ThreadPoolExecutor threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool( ApplicationSettings.getInstance().SenderThreadPoolSize);
 
     public SendEvent() {
         messageId = new AtomicInteger(0);
@@ -31,20 +30,12 @@ public class SendEvent {
 
     public void SendMessage(int content, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int messageId, int fifoId) {
 
-        DatagramSocket socketOut;
-        try {
-            socketOut = new DatagramSocket();                // outgoing channel
-            socketOut.setSoTimeout(ApplicationSettings.getInstance().timeoutVal);
-            service.submit(new ThreadSend(socketOut, destPort, destAddress, content, messageId, protocol, originalProcessId, originalMessageId, fifoId));
+        threadPool.submit(new ThreadSend(destPort, destAddress, content, messageId, protocol, originalProcessId, originalMessageId, fifoId));
 
-        } catch (SocketException e) {
-            e.printStackTrace();
-        }
     }
 
     private class ThreadSend extends Thread {
 
-        private DatagramSocket socketOut;
         private int destPort;
         private InetAddress destAddress;
 
@@ -56,8 +47,7 @@ public class SendEvent {
         int fifoId;
 
         // ThreadSend constructor
-        public ThreadSend(DatagramSocket socketOut, int destPort, InetAddress destAddress, int content, int messageId, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int fifoId) {
-            this.socketOut = socketOut;
+        public ThreadSend(int destPort, InetAddress destAddress, int content, int messageId, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int fifoId) {
             this.destPort = destPort;
             this.destAddress = destAddress;
             this.content = content;
@@ -66,9 +56,11 @@ public class SendEvent {
             this.originalMessageId = originalMessageId;
             this.originalProcessId = originalProcessId;
             this.fifoId = fifoId;
+            this.setName("Send Thread " + messageId);
         }
 
         public void run() {
+
 
             byte[] in_data = new byte[32];    // ack packet with no data
 
@@ -80,19 +72,22 @@ public class SendEvent {
 
             DatagramPacket sendingPacket = new DatagramPacket(out_data, out_data.length, destAddress, destPort);
             DatagramPacket receivePacket = new DatagramPacket(in_data, in_data.length);
-
+            DatagramSocket socketOut = null;
             try {
-                SendMessage(sendingPacket, receivePacket, -1);
+                socketOut = Process.getInstance().GetSocketFromQueue();
+                System.out.println("s " + messageId + " port " + socketOut.getLocalPort());
 
+                socketOut.setSoTimeout(ApplicationSettings.getInstance().timeoutVal);
+                SendMessage(socketOut, sendingPacket, receivePacket, -1);
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
-                socketOut.close();        // close outgoing socket
-                System.out.println("SendEvent: socketOut closed!");
+                Process.getInstance().PutSocketToQuery(socketOut);
+                //System.out.println("SendEvent: socketOut added to query!");
             }
         }
 
-        private boolean SendMessage(DatagramPacket sendingPacket, DatagramPacket receivePacket, int attempts) throws IOException {
+        private boolean SendMessage(DatagramSocket socketOut, DatagramPacket sendingPacket, DatagramPacket receivePacket, int attempts) throws IOException {
 
             int counter = 0;
             while (attempts == -1 || counter < attempts) {
@@ -102,12 +97,12 @@ public class SendEvent {
                     socketOut.receive(receivePacket);
                     ByteBuffer wrapped = ByteBuffer.wrap(receivePacket.getData()); // big-endian by default
                     int messageId = wrapped.getInt();
-
+                    System.out.println("Ack receive id: " + messageId + " expected :" + this.messageId + " port " + socketOut.getLocalPort());
                     if (this.messageId == messageId) {
                         return true;
                     }
                 } catch (SocketTimeoutException e) {
-                    System.out.println("Timeout reached: From Process" + Process.getInstance().Id + " to Port:" + destPort + e);
+                    System.out.println("Timeout reached: From Process" + Process.getInstance().Id + " MessageId:" + messageId + e);
                 }
                 ++counter;
             }

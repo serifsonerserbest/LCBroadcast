@@ -27,7 +27,6 @@ public class PerfectLink {
      * For PerfectLink
      */
     public void Send(int content, InetAddress destAddress, int destPort) {
-
         int id = SendEvent.NextId();
         sendEvent.SendMessage(content, destAddress, destPort, ProtocolTypeEnum.PerfectLink, 0, 0, id, 0);
     }
@@ -56,7 +55,7 @@ public class PerfectLink {
         sendEvent.SendMessage(content, destAddress, destPort, protocol, originalProcessId, originalMessageId, messageId, fifoId);
     }
 
-    public boolean Deliver(MessageModel message, int content, int port, InetAddress address) throws IOException {
+    public boolean Deliver(MessageModel message, int content, int port, InetAddress address) {
 
         if (receivedMessages.putIfAbsent(message, true) != null) {
             //System.out.println("MessageModel #" + message.getMessageId() + ": " + content + " duplicate");
@@ -64,6 +63,8 @@ public class PerfectLink {
             //System.out.println("PL: " + Process.Process.getInstance().Id + " MessageModel #" + message.getMessageId() + ":From Process.Process: " + message.getProcessId() + " is delivered");
 
             //receivedMessages.add(message);
+            System.out.println("d " + message.getProcessId() + " " + message.getMessageId() + " port " + port );
+
             deliverEvent.sendAck(port, address, message.getMessageId());
             return true;
         }

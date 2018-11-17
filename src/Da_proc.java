@@ -9,12 +9,14 @@ import UniformReliableBroadcast.UniformReliableBroadcast;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class Da_proc {
 
     private static void TestSendPL(PerfectLink perfectLink) throws UnknownHostException {
-        for (int x = 0; x < 1000; x++) {
-            perfectLink.Send(x, InetAddress.getByName("127.0.0.1"), 20001);
+        for (int x = 0; x < 100; x++) {
+            perfectLink.Send(x, InetAddress.getByName("127.0.0.1"), 20002);
         }
     }
 
@@ -44,7 +46,7 @@ public class Da_proc {
         int amountToSend;
 
         if (ApplicationSettings.getInstance().isDebug) {
-            processId = 3;
+            processId = 2;
             membershipFileName = "membership.txt";
             amountToSend = 0;
         } else {
@@ -62,34 +64,55 @@ public class Da_proc {
         UniformReliableBroadcast uniformReliableBroadcast = new UniformReliableBroadcast();
         FIFOBroadcast fifoBroadcast = FIFOBroadcast.getInst();
 
-        // INITIALIZE LISTENER
-        new Thread(() -> {
-            Listener l = new Listener(perfectLink, bestEffortBroadcast, uniformReliableBroadcast, fifoBroadcast);
-
-            try {
-                l.Start();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }).start();
-
         if (ApplicationSettings.getInstance().isDebug) {
+            final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(0);
+            executor.schedule(() -> {
+                try {
+                    //TestSendPL(perfectLink);
+                    TestSendFIFO(fifoBroadcast);
+                } catch (UnknownHostException e) {
+                    e.printStackTrace();
+                }
+            }, 20, TimeUnit.SECONDS);
+            executor.schedule(() -> {
+                try {
+                    System.out.println("Creating Log File");
+                    Process.getInstance().Logger.WriteLogToFile();
+                    System.out.println("Log File created");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }, 120, TimeUnit.SECONDS);
 
-            // TEST PROTOCOL
-            Thread.sleep(20000);
-            //TestSendPL(perfectLink);
-            //TestSendBE(bestEffortBroadcast);
-            //TestSendUR(uniformReliableBroadcast);
-            TestSendFIFO(fifoBroadcast);
+            /*new Thread(()-> {
+                // TEST PROTOCOL
+                try {
+                    Thread.sleep(20000);
 
-            Thread.sleep(100000);
-            System.out.println("Creating Log File");
-            Process.getInstance().Logger.WriteLogToFile();
-            System.out.println("Log File created");
+                //TestSendPL(perfectLink);
+                //TestSendBE(bestEffortBroadcast);
+                //TestSendUR(uniformReliableBroadcast);
+                TestSendFIFO(fifoBroadcast);
+
+                Thread.sleep(100000);
+                System.out.println("Creating Log File");
+                Process.getInstance().Logger.WriteLogToFile();
+                System.out.println("Log File created");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });*/
         }
 
-        while (true) {
-            Thread.sleep(10000);
+
+        // INITIALIZE LISTENER
+        Listener l = new Listener(perfectLink, bestEffortBroadcast, uniformReliableBroadcast, fifoBroadcast);
+
+        try {
+                l.Start();
+        } catch (IOException e) {
+                e.printStackTrace();
         }
+
     }
 }

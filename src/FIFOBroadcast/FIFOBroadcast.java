@@ -56,7 +56,9 @@ public class FIFOBroadcast {
                     System.out.println("d " + originalMessage.getProcessId() + " " + next[originalProcessId]);
                     Process.getInstance().Logger.WriteToLog("d " + originalMessage.getProcessId() + " " + next[originalProcessId]);
                     next[originalProcessId]++;
-                } else break;
+                } else {
+                    break;
+                }
             }
         }
     }

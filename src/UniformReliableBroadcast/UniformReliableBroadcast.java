@@ -10,22 +10,23 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 public class UniformReliableBroadcast {
 
     private BestEffortBroadcast bestEffortBroadcast;
 
-    private HashMap<MessageModel, Integer> ack;
-    private HashSet<MessageModel> delivered;
-    private HashSet<MessageModel> forward;
+    private volatile ConcurrentHashMap<MessageModel, Integer> ack;
+    private volatile ConcurrentHashMap<MessageModel, Integer> delivered;
+    private volatile ConcurrentHashMap<MessageModel, Integer> forward;
 
     public UniformReliableBroadcast() {
 
         bestEffortBroadcast = new BestEffortBroadcast();
-        ack = new HashMap<>();
-        delivered = new HashSet<>();
-        forward = new HashSet<>();
+        ack = new ConcurrentHashMap<>();
+        delivered = new ConcurrentHashMap<>();
+        forward = new ConcurrentHashMap<>();
 
     }
 
@@ -34,7 +35,7 @@ public class UniformReliableBroadcast {
         int messageId = SendEvent.NextId();
         int processId = Process.getInstance().Id;
         MessageModel message = new MessageModel(messageId, processId);
-        forward.add(message);
+        forward.put(message, 1);
 
         bestEffortBroadcast.Broadcast(content, processId, messageId, ProtocolTypeEnum.UniformReliableBroadcast, messageId);
     }
@@ -45,7 +46,7 @@ public class UniformReliableBroadcast {
         int messageId = SendEvent.NextId();
         int processId = Process.getInstance().Id;
         MessageModel message = new MessageModel(messageId, processId);
-        forward.add(message);
+        forward.put(message, 1);
         bestEffortBroadcast.Broadcast(content, processId, messageId, ProtocolTypeEnum.FIFOBroadcast, messageId, fifoId);
     }
 
@@ -56,16 +57,16 @@ public class UniformReliableBroadcast {
             int count = ack.getOrDefault(originalMessage, 0);
             ack.put(originalMessage, count + 1);
 
-            if (!forward.contains(originalMessage)) {
-                forward.add(originalMessage);
+            if (!forward.containsKey(originalMessage)) {
+                forward.put(originalMessage, 1);
                 int id = SendEvent.NextId();
                 bestEffortBroadcast.Broadcast(content, originalMessage.getProcessId(), originalMessage.getMessageId(),
                         ProtocolTypeEnum.FIFOBroadcast, id, fifoId);
             }
         }
-        if (forward.contains(originalMessage)) {
-            if (canDeliver(originalMessage) && !delivered.contains(originalMessage)) {
-                delivered.add(originalMessage);
+        if (forward.containsKey(originalMessage)) {
+            if (canDeliver(originalMessage) && !delivered.containsKey(originalMessage)) {
+                delivered.put(originalMessage, 1);
                 deliver = true;
             }
         }

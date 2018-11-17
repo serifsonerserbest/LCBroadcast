@@ -1,5 +1,6 @@
 package Listener;
 
+import AppSettings.ApplicationSettings;
 import BestEffordBroadcast.BestEffortBroadcast;
 import Enums.ProtocolTypeEnum;
 import FIFOBroadcast.FIFOBroadcast;
@@ -16,9 +17,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 import java.util.Arrays;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.*;
 
 public class Listener {
     DatagramSocket socketIn;
@@ -44,8 +43,7 @@ public class Listener {
         byte[] messageReceived;
         int portReceived;
 
-        ThreadPoolExecutor  threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(10 );
-//Executors.newCachedThreadPool();
+        ThreadPoolExecutor  threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(ApplicationSettings.getInstance().ListenerThreadPoolSize);
 
         while (true) {
             //receiving packet
@@ -60,7 +58,7 @@ public class Listener {
         }
     }
 
-    public class RequestProcessing implements Runnable {
+    public class RequestProcessing extends Thread {
         byte[] messageReceived;
         int portReceived;
         InetAddress addressReceived;
@@ -87,6 +85,7 @@ public class Listener {
             int content = messageArray[2];
             int processId = messageArray[3];
             MessageModel message = new MessageModel(messageId, processId);
+            this.setName("Send Thread " + messageId);
 
             // DELIVER THE MESSAGE ACCORDING TO PROTOCOL
             try {

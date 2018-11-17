@@ -8,8 +8,15 @@ import sun.misc.SignalHandler;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import Logger.Logger;
 import SignalHandler.DiagnosticSignalHandler;
@@ -17,6 +24,9 @@ import SignalHandler.DiagnosticSignalHandler;
 public class Process {
 
     private volatile static Process process = new Process();
+
+    private volatile ConcurrentLinkedQueue<DatagramSocket> socketQueue = new ConcurrentLinkedQueue <>();
+
     int amountMessageToSend;
 
     public int Id;
@@ -54,6 +64,25 @@ public class Process {
         return null;
     }
 
+    public DatagramSocket GetSocketFromQueue()
+    {
+        DatagramSocket socket = socketQueue.poll();
+
+        if (socket == null) {
+            try {
+                socket = new DatagramSocket();
+            } catch (SocketException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return socket;
+    }
+
+    public void PutSocketToQuery(DatagramSocket socket)
+    {
+        socketQueue.add(socket);
+    }
     //region Private Methods
     private void SetupSignalHandlers() {
 
