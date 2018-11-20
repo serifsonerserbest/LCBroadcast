@@ -37,7 +37,7 @@ public class FIFOBroadcast {
     public void Broadcast(int content) {
 
         lsn++;
-        //System.out.println("b " + lsn);
+        System.out.println("b " + lsn);
         uniformReliableBroadcast.Broadcast(content, lsn);
         Process.getInstance().Logger.WriteToLog("b " + lsn);
     }

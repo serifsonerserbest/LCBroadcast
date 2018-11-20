@@ -23,7 +23,7 @@ public class DeliverEvent {
             IntBuffer intBuffer = byteBuffer.asIntBuffer();
             intBuffer.put(data);
             byte[] sentData = byteBuffer.array();
-            System.out.println("Ack Send Id: " + messageId);
+            //System.out.println("Ack Send Id: " + messageId);
             socket.send(new DatagramPacket(sentData, sentData.length, address, port));
         } catch (Exception e) {
             e.printStackTrace();

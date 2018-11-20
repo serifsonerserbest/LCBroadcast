@@ -75,10 +75,15 @@ public class SendEvent {
             DatagramSocket socketOut = null;
             try {
                 socketOut = Process.getInstance().GetSocketFromQueue();
-                System.out.println("s " + messageId + " port " + socketOut.getLocalPort());
+                //System.out.println("s " + messageId + " port " + socketOut.getLocalPort());
 
                 socketOut.setSoTimeout(ApplicationSettings.getInstance().timeoutVal);
-                SendMessage(socketOut, sendingPacket, receivePacket, -1);
+                boolean isMessageSent = SendMessage(socketOut, sendingPacket, receivePacket, 1);
+
+                if(!isMessageSent)
+                {
+                    threadPool.submit(new ThreadSend(destPort, destAddress, content, messageId, protocol, originalProcessId, originalMessageId, fifoId));
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
@@ -97,12 +102,12 @@ public class SendEvent {
                     socketOut.receive(receivePacket);
                     ByteBuffer wrapped = ByteBuffer.wrap(receivePacket.getData()); // big-endian by default
                     int messageId = wrapped.getInt();
-                    System.out.println("Ack receive id: " + messageId + " expected :" + this.messageId + " port " + socketOut.getLocalPort());
+                    //System.out.println("Ack receive id: " + messageId + " expected :" + this.messageId + " port " + socketOut.getLocalPort());
                     if (this.messageId == messageId) {
                         return true;
                     }
                 } catch (SocketTimeoutException e) {
-                    System.out.println("Timeout reached: From Process" + Process.getInstance().Id + " MessageId:" + messageId + e);
+                    //System.out.println("Timeout reached: From Process" + Process.getInstance().Id + " MessageId:" + messageId + e);
                 }
                 ++counter;
             }

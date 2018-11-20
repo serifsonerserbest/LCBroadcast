@@ -63,7 +63,7 @@ public class PerfectLink {
             //System.out.println("PL: " + Process.Process.getInstance().Id + " MessageModel #" + message.getMessageId() + ":From Process.Process: " + message.getProcessId() + " is delivered");
 
             //receivedMessages.add(message);
-            System.out.println("d " + message.getProcessId() + " " + message.getMessageId() + " port " + port );
+            //System.out.println("d " + message.getProcessId() + " " + message.getMessageId() + " port " + port );
 
             deliverEvent.sendAck(port, address, message.getMessageId());
             return true;

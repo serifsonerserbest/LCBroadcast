@@ -33,7 +33,7 @@ public class Da_proc {
     }
 
     private static void TestSendFIFO(FIFOBroadcast fifoBroadcast) throws UnknownHostException {
-        for (int x = 0; x < 10000; x++) {
+        for (int x = 0; x < 100; x++) {
             fifoBroadcast.Broadcast(1);
         }
     }

@@ -11,15 +11,16 @@ import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class UniformReliableBroadcast {
 
     private BestEffortBroadcast bestEffortBroadcast;
 
-    private volatile ConcurrentHashMap<MessageModel, Integer> ack;
-    private volatile ConcurrentHashMap<MessageModel, Integer> delivered;
-    private volatile ConcurrentHashMap<MessageModel, Integer> forward;
+    private volatile ConcurrentHashMap<MessageModel, AtomicInteger> ack;
+    private volatile ConcurrentHashMap<MessageModel, AtomicInteger> delivered;
+    private volatile ConcurrentHashMap<MessageModel, AtomicInteger> forward;
 
     public UniformReliableBroadcast() {
 
@@ -35,7 +36,7 @@ public class UniformReliableBroadcast {
         int messageId = SendEvent.NextId();
         int processId = Process.getInstance().Id;
         MessageModel message = new MessageModel(messageId, processId);
-        forward.put(message, 1);
+        forward.put(message, new AtomicInteger(1));
 
         bestEffortBroadcast.Broadcast(content, processId, messageId, ProtocolTypeEnum.UniformReliableBroadcast, messageId);
     }
@@ -46,7 +47,7 @@ public class UniformReliableBroadcast {
         int messageId = SendEvent.NextId();
         int processId = Process.getInstance().Id;
         MessageModel message = new MessageModel(messageId, processId);
-        forward.put(message, 1);
+        forward.put(message, new AtomicInteger(1));
         bestEffortBroadcast.Broadcast(content, processId, messageId, ProtocolTypeEnum.FIFOBroadcast, messageId, fifoId);
     }
 
@@ -54,11 +55,13 @@ public class UniformReliableBroadcast {
 
         boolean deliver = false;
         if (bestEffortBroadcast.Deliver(message, content, portReceived, addressReceived)) {
-            int count = ack.getOrDefault(originalMessage, 0);
-            ack.put(originalMessage, count + 1);
+
+            //int count = ack.getOrDefault(originalMessage, 0);
+            ack.computeIfAbsent(originalMessage, x ->  new AtomicInteger(0));
+            ack.computeIfPresent(originalMessage, (key, value) -> value).incrementAndGet();
 
             if (!forward.containsKey(originalMessage)) {
-                forward.put(originalMessage, 1);
+                forward.put(originalMessage, new AtomicInteger(1));
                 int id = SendEvent.NextId();
                 bestEffortBroadcast.Broadcast(content, originalMessage.getProcessId(), originalMessage.getMessageId(),
                         ProtocolTypeEnum.FIFOBroadcast, id, fifoId);
@@ -66,7 +69,7 @@ public class UniformReliableBroadcast {
         }
         if (forward.containsKey(originalMessage)) {
             if (canDeliver(originalMessage) && !delivered.containsKey(originalMessage)) {
-                delivered.put(originalMessage, 1);
+                delivered.put(originalMessage, new AtomicInteger(1));
                 deliver = true;
             }
         }
@@ -76,7 +79,10 @@ public class UniformReliableBroadcast {
     public boolean canDeliver(MessageModel originalMessage) {
 
         int numOfProc = Process.getInstance().processes.size();
-        int count = ack.getOrDefault(originalMessage, 0);
-        return count > numOfProc / 2;
+        AtomicInteger count = ack.getOrDefault(originalMessage, new AtomicInteger(0));
+        System.out.println(count + " " + numOfProc);
+        System.out.println(count.get() > numOfProc / 2);
+
+        return count.get() > numOfProc / 2;
     }
 }
