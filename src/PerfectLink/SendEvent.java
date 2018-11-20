@@ -8,8 +8,13 @@ import java.io.IOException;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Stream;
 
 
 public class SendEvent {
@@ -25,13 +30,13 @@ public class SendEvent {
         return ++messageId;
     }
 
-    public synchronized void SendMessage(int content, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int messageId, int fifoId) {
+    public synchronized void SendMessage(int content, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int messageId, int fifoId, int[] vectorClock) {
 
         DatagramSocket socketOut;
         try {
             socketOut = new DatagramSocket();                // outgoing channel
             socketOut.setSoTimeout(ApplicationSettings.getInstance().timeoutVal);
-            service.submit(new ThreadSend(socketOut, destPort, destAddress, content, messageId, protocol, originalProcessId, originalMessageId, fifoId));
+            service.submit(new ThreadSend(socketOut, destPort, destAddress, content, messageId, protocol, originalProcessId, originalMessageId, fifoId, vectorClock));
 
         } catch (SocketException e) {
             e.printStackTrace();
@@ -50,9 +55,10 @@ public class SendEvent {
         int originalProcessId;
         int originalMessageId;
         int fifoId;
+        int[] vectorClock;
 
         // ThreadSend constructor
-        public ThreadSend(DatagramSocket socketOut, int destPort, InetAddress destAddress, int content, int messageId, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int fifoId) {
+        public ThreadSend(DatagramSocket socketOut, int destPort, InetAddress destAddress, int content, int messageId, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int fifoId, int[] vectorClock) {
             this.socketOut = socketOut;
             this.destPort = destPort;
             this.destAddress = destAddress;
@@ -62,6 +68,23 @@ public class SendEvent {
             this.originalMessageId = originalMessageId;
             this.originalProcessId = originalProcessId;
             this.fifoId = fifoId;
+            this.vectorClock = vectorClock;
+        }
+
+        private int[] concatenate(int[]... arrays) {
+            int length = 0;
+            for (int[] array : arrays) {
+                length += array.length;
+            }
+            int[] result = new int[length];
+            int pos = 0;
+            for (int[] array : arrays) {
+                for (int element : array) {
+                    result[pos] = element;
+                    pos++;
+                }
+            }
+            return result;
         }
 
         public void run() {
@@ -69,6 +92,10 @@ public class SendEvent {
             byte[] in_data = new byte[32];    // ack packet with no data
 
             int[] data = {this.messageId, protocol.ordinal(), this.content, Process.getInstance().Id, originalProcessId, originalMessageId, fifoId};
+            if (vectorClock != null){
+                data = concatenate(data, vectorClock);
+            }
+
             ByteBuffer byteBuffer = ByteBuffer.allocate(data.length * 4);
             IntBuffer intBuffer = byteBuffer.asIntBuffer();
             intBuffer.put(data);

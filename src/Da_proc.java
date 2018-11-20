@@ -2,6 +2,7 @@ import AppSettings.ApplicationSettings;
 import BestEffordBroadcast.BestEffortBroadcast;
 import FIFOBroadcast.FIFOBroadcast;
 import Listener.Listener;
+import LocalCausalBroadcast.LocalCausalBroadcast;
 import PerfectLink.PerfectLink;
 import Process.Process;
 import UniformReliableBroadcast.UniformReliableBroadcast;
@@ -44,7 +45,7 @@ public class Da_proc {
         int amountToSend;
 
         if (ApplicationSettings.getInstance().isDebug) {
-            processId = 3;
+            processId = 1;
             membershipFileName = "membership.txt";
             amountToSend = 0;
         } else {
@@ -61,8 +62,10 @@ public class Da_proc {
         BestEffortBroadcast bestEffortBroadcast = new BestEffortBroadcast();
         UniformReliableBroadcast uniformReliableBroadcast = new UniformReliableBroadcast();
         FIFOBroadcast fifoBroadcast = FIFOBroadcast.getInst();
-
+        LocalCausalBroadcast dummy = new LocalCausalBroadcast();
+        
         // INITIALIZE LISTENER
+
         new Thread(() -> {
             Listener l = new Listener(perfectLink, bestEffortBroadcast, uniformReliableBroadcast, fifoBroadcast);
 

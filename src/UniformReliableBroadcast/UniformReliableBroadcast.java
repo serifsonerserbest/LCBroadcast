@@ -49,6 +49,16 @@ public class UniformReliableBroadcast {
         bestEffortBroadcast.Broadcast(content, processId, messageId, ProtocolTypeEnum.FIFOBroadcast, messageId, fifoId);
     }
 
+        //for LocalCausalBroadcast
+    public synchronized void Broadcast(int content, int[] vectorClock) {
+
+        int messageId = SendEvent.NextId();
+        int processId = Process.getInstance().Id;
+        MessageModel message = new MessageModel(messageId, processId);
+        forward.add(message);
+        bestEffortBroadcast.Broadcast(content, processId, messageId, ProtocolTypeEnum.FIFOBroadcast, messageId, vectorClock);
+    }
+
     public synchronized boolean Deliver(MessageModel message, MessageModel originalMessage, int content, int portReceived, InetAddress addressReceived, int fifoId) throws IOException {
 
         boolean deliver = false;
