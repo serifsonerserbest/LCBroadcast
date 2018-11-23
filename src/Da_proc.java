@@ -39,7 +39,7 @@ public class Da_proc {
     }
 
     private static void TestSendLocalCausal(LocalCausalBroadcast localCausalBroadcast) throws UnknownHostException {
-        for (int x = 0; x < 100; x++) {
+        for (int x = 0; x < 1000; x++) {
             localCausalBroadcast.Broadcast(1);
         }
     }
@@ -93,7 +93,7 @@ public class Da_proc {
         if (ApplicationSettings.getInstance().isDebug) {
 
             // TEST PROTOCOL
-            Thread.sleep(20000);
+            Thread.sleep(40000);
             //TestSendPL(perfectLink);
             //TestSendBE(bestEffortBroadcast);
             //TestSendUR(uniformReliableBroadcast);

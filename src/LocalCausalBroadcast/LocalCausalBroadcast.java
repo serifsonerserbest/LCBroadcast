@@ -5,17 +5,18 @@ import UniformReliableBroadcast.UniformReliableBroadcast;
 import Process.Process;
 
 import java.io.IOException;
-import java.io.PipedReader;
 import java.net.InetAddress;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.concurrent.atomic.AtomicIntegerArray;
 
 public class LocalCausalBroadcast {
 
     private volatile static LocalCausalBroadcast localCausalBroadcast = new LocalCausalBroadcast();
 
     private UniformReliableBroadcast uniformReliableBroadcast;
-    private int[] vectorClock;
+    private  AtomicIntegerArray vectorClock;
+
     private LinkedList<int[]>[] pending; // Keeps vector clocks according to process id
     private boolean[] dependencyMask;
 
@@ -23,12 +24,12 @@ public class LocalCausalBroadcast {
         int numOfProcesses = Process.getInstance().processes.size();
 
         uniformReliableBroadcast = new UniformReliableBroadcast();
-        vectorClock = new int[numOfProcesses + 1];
+        vectorClock = new AtomicIntegerArray(numOfProcesses + 1);
         pending = new LinkedList[numOfProcesses + 1];
         dependencyMask = Process.getInstance().dependencies;
 
         for (int i = 0; i <= numOfProcesses; i++){
-            vectorClock[i] = 1;
+            vectorClock.set(i, 1);
             pending[i] = new LinkedList<>();
         }
 
@@ -39,16 +40,14 @@ public class LocalCausalBroadcast {
         return localCausalBroadcast;
     }
 
-    private synchronized void PrintVC(int[] VC){
-        for (int i = 0; i < VC.length; i++) {
+    private synchronized void PrintVC(AtomicIntegerArray VC){
+        for (int i = 0; i < VC.length(); i++) {
             if (i > 0) {
                 System.out.print(", ");
             }
-            System.out.print(VC[i]);
+            System.out.print(VC.get(i));
         }
         System.out.println("");
-
-
     }
 
     public synchronized void Broadcast(int content){
@@ -58,17 +57,17 @@ public class LocalCausalBroadcast {
         int numOfProcesses = Process.getInstance().processes.size();
         int[] VCBroadcast = new int[numOfProcesses + 1];
         for(int i= 1; i <= numOfProcesses; i++){
-            if (dependencyMask[i])
-                VCBroadcast[i] = vectorClock[i];
+            if ( true/*dependencyMask[i]*/)
+                VCBroadcast[i] = vectorClock.get(i);
         }
 
-        System.out.println("b " + Process.getInstance().Id + " " + vectorClock[Process.getInstance().Id]);
+        System.out.println("b " + Process.getInstance().Id + " " + vectorClock.get(Process.getInstance().Id));
         PrintVC(vectorClock);
 
         Process.getInstance().Logger.WriteToLog("b " + Process.getInstance().Id);
 
-        uniformReliableBroadcast.Broadcast(content, vectorClock);
-        ++vectorClock[Process.getInstance().Id];
+        uniformReliableBroadcast.Broadcast(content, VCBroadcast);
+        vectorClock.incrementAndGet(Process.getInstance().Id);
     }
 
     public synchronized void Deliver(MessageModel message, MessageModel originalMessage, int content, int portReceived, InetAddress addressReceived, int[] vectorClock) throws IOException {
@@ -95,16 +94,16 @@ public class LocalCausalBroadcast {
 
                 //Compare VC with VCx to decide delivery action
                 for (int j= 1; j <= numOfProcesses; j++){
-                    if( vectorClock[j] < VCx[j])
+                    if( vectorClock.get(j) < VCx[j])
                         deliver = false;
                 }
                 if (deliver) {
                     it.remove();
-                    System.out.println("d " + pId + " " + vectorClock[pId]);
+                    System.out.println("d " + pId + " " + vectorClock.get(pId));
                     PrintVC(vectorClock);
 
-                    Process.getInstance().Logger.WriteToLog("d " + pId + " " + vectorClock[pId]);
-                    ++vectorClock[pId];
+                    Process.getInstance().Logger.WriteToLog("d " + pId + " " + vectorClock.get(pId));
+                    vectorClock.incrementAndGet(pId);
                 }
                 else{
 //                    System.out.println("No delivery: VC and VCx:");
