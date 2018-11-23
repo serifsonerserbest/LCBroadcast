@@ -25,7 +25,7 @@ public class FIFOBroadcast {
         pending = new HashMap<>();
         int numberOfProcesses = Process.getInstance().processes.size();
         next = new int[numberOfProcesses + 1];
-        for (int i = 0; i <= numberOfProcesses; ++i)
+        for (int i = 0; i <= numberOfProcesses; i++)
             next[i] = 1;
     }
 
@@ -37,7 +37,7 @@ public class FIFOBroadcast {
     public synchronized void Broadcast(int content) {
 
         lsn++;
-        //System.out.println("b " + lsn);
+        System.out.println("b " + lsn);
         uniformReliableBroadcast.Broadcast(content, lsn);
         Process.getInstance().Logger.WriteToLog("b " + lsn);
     }
@@ -53,7 +53,7 @@ public class FIFOBroadcast {
                 MessageModel fifoKey = new MessageModel(nextId, originalProcessId);
                 if (pending.containsKey(fifoKey)) {
                     pending.remove(fifoKey);
-                    //System.out.println("d " + originalMessage.getProcessId() + " " + next[originalProcessId]);
+                    System.out.println("d " + originalMessage.getProcessId() + " " + next[originalProcessId]);
                     Process.getInstance().Logger.WriteToLog("d " + originalMessage.getProcessId() + " " + next[originalProcessId]);
                     next[originalProcessId]++;
                 } else break;

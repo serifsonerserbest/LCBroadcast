@@ -56,9 +56,10 @@ public class UniformReliableBroadcast {
         int processId = Process.getInstance().Id;
         MessageModel message = new MessageModel(messageId, processId);
         forward.add(message);
-        bestEffortBroadcast.Broadcast(content, processId, messageId, ProtocolTypeEnum.FIFOBroadcast, messageId, vectorClock);
+        bestEffortBroadcast.Broadcast(content, processId, messageId, ProtocolTypeEnum.LocalCausalBroadcast, messageId, vectorClock);
     }
 
+    /* For FIFO Deliver */
     public synchronized boolean Deliver(MessageModel message, MessageModel originalMessage, int content, int portReceived, InetAddress addressReceived, int fifoId) throws IOException {
 
         boolean deliver = false;
@@ -81,6 +82,31 @@ public class UniformReliableBroadcast {
         }
         return deliver;
     }
+
+    /* For Local Causal Deliver */
+    public synchronized boolean Deliver(MessageModel message, MessageModel originalMessage, int content, int portReceived, InetAddress addressReceived, int[] vectorClock) throws IOException {
+
+        boolean deliver = false;
+        if (bestEffortBroadcast.Deliver(message, content, portReceived, addressReceived)) {
+            int count = ack.getOrDefault(originalMessage, 0);
+            ack.put(originalMessage, count + 1);
+
+            if (!forward.contains(originalMessage)) {
+                forward.add(originalMessage);
+                int id = SendEvent.NextId();
+                bestEffortBroadcast.Broadcast(content, originalMessage.getProcessId(), originalMessage.getMessageId(),
+                        ProtocolTypeEnum.LocalCausalBroadcast, id, vectorClock);
+            }
+        }
+        if (forward.contains(originalMessage)) {
+            if (canDeliver(originalMessage) && !delivered.contains(originalMessage)) {
+                delivered.add(originalMessage);
+                deliver = true;
+            }
+        }
+        return deliver;
+    }
+
 
     public synchronized boolean canDeliver(MessageModel originalMessage) {
 
