@@ -52,7 +52,7 @@ public class Da_proc {
         int amountToSend;
 
         if (ApplicationSettings.getInstance().isDebug) {
-            processId = 5;
+            processId = 1;
             membershipFileName = "membership.txt";
             amountToSend = 0;
         } else {
@@ -73,10 +73,6 @@ public class Da_proc {
         FIFOBroadcast fifoBroadcast = FIFOBroadcast.getInst();
         LocalCausalBroadcast localCausalBroadcast = LocalCausalBroadcast.getInst();
 
-
-
-        int[] vectorClock = new int[10];
-        LinkedList<int[]>[] pending = new LinkedList[10];
 
         // INITIALIZE LISTENER
 
