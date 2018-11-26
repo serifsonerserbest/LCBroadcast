@@ -80,8 +80,8 @@ public class UniformReliableBroadcast {
 
         int numOfProc = Process.getInstance().processes.size();
         AtomicInteger count = ack.getOrDefault(originalMessage, new AtomicInteger(0));
-        System.out.println(count + " " + numOfProc);
-        System.out.println(count.get() > numOfProc / 2);
+        //System.out.println(count + " " + numOfProc);
+        //System.out.println(count.get() > numOfProc / 2);
 
         return count.get() > numOfProc / 2;
     }

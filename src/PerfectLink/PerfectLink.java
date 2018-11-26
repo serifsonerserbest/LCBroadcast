@@ -57,18 +57,8 @@ public class PerfectLink {
 
     public boolean Deliver(MessageModel message, int content, int port, InetAddress address) {
 
-        if (receivedMessages.putIfAbsent(message, true) != null) {
-            //System.out.println("MessageModel #" + message.getMessageId() + ": " + content + " duplicate");
-        } else {
-            //System.out.println("PL: " + Process.Process.getInstance().Id + " MessageModel #" + message.getMessageId() + ":From Process.Process: " + message.getProcessId() + " is delivered");
-
-            //receivedMessages.add(message);
-            //System.out.println("d " + message.getProcessId() + " " + message.getMessageId() + " port " + port );
-
-            deliverEvent.sendAck(port, address, message.getMessageId());
-            return true;
-        }
-        return false;
+        deliverEvent.sendAck(port, address, message.getMessageId());
+        return receivedMessages.putIfAbsent(message, true) == null;
     }
 }
 

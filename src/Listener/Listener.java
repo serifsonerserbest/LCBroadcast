@@ -44,7 +44,9 @@ public class Listener {
         int portReceived;
 
         ThreadPoolExecutor  threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(ApplicationSettings.getInstance().ListenerThreadPoolSize);
-
+        //threadPool.setCorePoolSize(1);
+        //threadPool.setKeepAliveTime(200, TimeUnit.MILLISECONDS);
+        threadPool.prestartCoreThread();
         while (true) {
             //receiving packet
             DatagramPacket receivedPacket = new DatagramPacket(packetReceived, packetReceived.length);

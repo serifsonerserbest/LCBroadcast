@@ -8,9 +8,9 @@ import java.io.IOException;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
@@ -18,7 +18,9 @@ public class SendEvent {
 
     public volatile static AtomicInteger messageId ;
 
-    volatile ThreadPoolExecutor threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool( ApplicationSettings.getInstance().SenderThreadPoolSize);
+    public static volatile HashMap<InetSocketAddress, ThreadPoolExecutor> threadPoolLst = new HashMap<>();
+
+    //volatile ThreadPoolExecutor threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool( ApplicationSettings.getInstance().SenderThreadPoolSize);
 
     public SendEvent() {
         messageId = new AtomicInteger(0);
@@ -30,8 +32,26 @@ public class SendEvent {
 
     public void SendMessage(int content, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int messageId, int fifoId) {
 
-        threadPool.submit(new ThreadSend(destPort, destAddress, content, messageId, protocol, originalProcessId, originalMessageId, fifoId));
+        InetSocketAddress key = new InetSocketAddress(destAddress, destPort);
+        if(!threadPoolLst.containsKey(key))
+        {
+            ThreadPoolExecutor threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool( ApplicationSettings.getInstance().SenderThreadPoolSize);
+            threadPool.setCorePoolSize(1);
+            threadPool.setKeepAliveTime(200, TimeUnit.MILLISECONDS);
+            /*threadPool.setRejectedExecutionHandler((r, executor) -> {
+                System.out.println("sssss");
+            });*/
+            threadPoolLst.put(key, threadPool);
+            //threadPool.setKeepAliveTime(5, TimeUnit.MINUTES);
+        }
 
+        ThreadSend thread = new ThreadSend(destPort, destAddress, content, messageId, protocol, originalProcessId, originalMessageId, fifoId);
+        if(Process.getInstance().IsRunning) {
+            threadPoolLst.get(key).submit(thread);
+        }
+        else {
+            threadPoolLst.get(key).getQueue().offer(thread);
+        }
     }
 
     private class ThreadSend extends Thread {
@@ -78,12 +98,9 @@ public class SendEvent {
                 //System.out.println("s " + messageId + " port " + socketOut.getLocalPort());
 
                 socketOut.setSoTimeout(ApplicationSettings.getInstance().timeoutVal);
-                boolean isMessageSent = SendMessage(socketOut, sendingPacket, receivePacket, 1);
+                boolean isMessageSent = SendMessage(socketOut, sendingPacket, receivePacket, -1);
 
-                if(!isMessageSent)
-                {
-                    threadPool.submit(new ThreadSend(destPort, destAddress, content, messageId, protocol, originalProcessId, originalMessageId, fifoId));
-                }
+
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
@@ -94,6 +111,7 @@ public class SendEvent {
 
         private boolean SendMessage(DatagramSocket socketOut, DatagramPacket sendingPacket, DatagramPacket receivePacket, int attempts) throws IOException {
 
+
             int counter = 0;
             while (attempts == -1 || counter < attempts) {
 
@@ -102,12 +120,27 @@ public class SendEvent {
                     socketOut.receive(receivePacket);
                     ByteBuffer wrapped = ByteBuffer.wrap(receivePacket.getData()); // big-endian by default
                     int messageId = wrapped.getInt();
-                    //System.out.println("Ack receive id: " + messageId + " expected :" + this.messageId + " port " + socketOut.getLocalPort());
+                    System.out.println("Ack receive id: " + messageId + " expected :" + this.messageId + " port " + socketOut.getLocalPort());
                     if (this.messageId == messageId) {
+                        threadPoolLst.computeIfPresent(new InetSocketAddress(destAddress, destPort), (x, y) ->{
+                            if(y.getCorePoolSize() < ApplicationSettings.getInstance().SenderThreadPoolSize)
+                            {
+                                y.setCorePoolSize(y.getCorePoolSize() + 1);
+                            }
+                            return y;
+                        });
                         return true;
                     }
                 } catch (SocketTimeoutException e) {
-                    //System.out.println("Timeout reached: From Process" + Process.getInstance().Id + " MessageId:" + messageId + e);
+                    threadPoolLst.computeIfPresent(new InetSocketAddress(destAddress, destPort), (x, y) ->{
+                       // y.submit(new ThreadSend(destPort, destAddress, content, messageId, protocol, originalProcessId, originalMessageId, fifoId));
+                        if(y.getCorePoolSize() > 1)
+                        {
+                            y.setCorePoolSize(y.getCorePoolSize() - 1);
+                        }
+                        return y;
+                    });
+                    System.out.println("Timeout reached: From Process" + Process.getInstance().Id + " to: " + destPort  + " MessageId:" + messageId + e);
                 }
                 ++counter;
             }

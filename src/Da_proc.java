@@ -33,7 +33,7 @@ public class Da_proc {
     }
 
     private static void TestSendFIFO(FIFOBroadcast fifoBroadcast) throws UnknownHostException {
-        for (int x = 0; x < 100; x++) {
+        for (int x = 0; x < 1000; x++) {
             fifoBroadcast.Broadcast(1);
         }
     }
@@ -48,7 +48,7 @@ public class Da_proc {
         if (ApplicationSettings.getInstance().isDebug) {
             processId = 2;
             membershipFileName = "membership.txt";
-            amountToSend = 0;
+            amountToSend = 100000;
         } else {
             processId = Integer.parseInt(args[0]);
             membershipFileName = args[1];
@@ -64,15 +64,25 @@ public class Da_proc {
         UniformReliableBroadcast uniformReliableBroadcast = new UniformReliableBroadcast();
         FIFOBroadcast fifoBroadcast = FIFOBroadcast.getInst();
 
+
+        for (int i = 1; i <= amountToSend; i++) {
+            FIFOBroadcast.getInst().Broadcast(i);
+        }
+
+
         if (ApplicationSettings.getInstance().isDebug) {
+
             final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(0);
             executor.schedule(() -> {
-                try {
+                Process.getInstance().Start();
+
+                /*try {
                     //TestSendPL(perfectLink);
-                    TestSendFIFO(fifoBroadcast);
+                    //TestSendFIFO(fifoBroadcast);
+                    //Process.getInstance().Start();
                 } catch (UnknownHostException e) {
                     e.printStackTrace();
-                }
+                }*/
             }, 20, TimeUnit.SECONDS);
             executor.schedule(() -> {
                 try {
@@ -82,7 +92,7 @@ public class Da_proc {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            }, 120, TimeUnit.SECONDS);
+            }, 30, TimeUnit.SECONDS);
 
             /*new Thread(()-> {
                 // TEST PROTOCOL

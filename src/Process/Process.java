@@ -4,15 +4,18 @@ import AppSettings.ApplicationSettings;
 import FIFOBroadcast.FIFOBroadcast;
 import Models.ProcessModel;
 
+import PerfectLink.SendEvent;
 import sun.misc.SignalHandler;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
@@ -20,9 +23,11 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import Logger.Logger;
 import SignalHandler.DiagnosticSignalHandler;
+import sun.nio.ch.ThreadPool;
 
 public class Process {
 
+    public boolean IsRunning = false;
     private volatile static Process process = new Process();
 
     private volatile ConcurrentLinkedQueue<DatagramSocket> socketQueue = new ConcurrentLinkedQueue <>();
@@ -64,6 +69,13 @@ public class Process {
         return null;
     }
 
+    public void Start()
+    {
+        IsRunning = true;
+        for (Map.Entry<InetSocketAddress, ThreadPoolExecutor> entry : SendEvent.threadPoolLst.entrySet()) {
+            entry.getValue().prestartAllCoreThreads();
+        }
+    }
     public DatagramSocket GetSocketFromQueue()
     {
         DatagramSocket socket = socketQueue.poll();
@@ -137,9 +149,7 @@ public class Process {
 
         return sig -> {
             System.out.println("USR2");
-            for (int i = 1; i <= amountMessageToSend; i++) {
-                FIFOBroadcast.getInst().Broadcast(i);
-            }
+            Start();
         };
     }
     //endregion

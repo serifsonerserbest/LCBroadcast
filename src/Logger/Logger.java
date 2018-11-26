@@ -5,13 +5,14 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Logger {
-    private List<String> Log;
+    private ConcurrentLinkedQueue<String> Log;
     public final String outputFileName;
 
     public Logger(int processId) {
-        Log = new ArrayList<String>();
+        Log = new ConcurrentLinkedQueue<String>();
         outputFileName = "da_proc_" + processId + ".out";
     }
 
