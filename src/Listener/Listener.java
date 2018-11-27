@@ -116,8 +116,8 @@ public class Listener {
 
                     int numOfProcesses = Process.getInstance().processes.size();
                     int [] vectorClock = new int[numOfProcesses + 1];
-                    for (int j= 1; j <= numOfProcesses; j++){
-                        vectorClock[j] = messageArray[5 + j];
+                    for (int j= 0; j < numOfProcesses + 1; j++){
+                        vectorClock[j] = messageArray[7 + j];
                     }
 
                     localCausalBroadcast.Deliver(message, messageOriginal, content, portReceived, addressReceived, vectorClock);
