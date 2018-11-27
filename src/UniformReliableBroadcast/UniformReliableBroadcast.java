@@ -51,6 +51,16 @@ public class UniformReliableBroadcast {
         bestEffortBroadcast.Broadcast(content, processId, messageId, ProtocolTypeEnum.FIFOBroadcast, messageId, fifoId);
     }
 
+    //for LocalCausalBroadcast
+    public void Broadcast(int content, int[] vectorClock) {
+
+        int messageId = SendEvent.NextId();
+        int processId = Process.getInstance().Id;
+        MessageModel message = new MessageModel(messageId, processId);
+        forward.put(message, new AtomicInteger(1));
+        bestEffortBroadcast.Broadcast(content, processId, messageId, ProtocolTypeEnum.LocalCausalBroadcast, messageId, vectorClock);
+    }
+
     public boolean Deliver(MessageModel message, MessageModel originalMessage, int content, int portReceived, InetAddress addressReceived, int fifoId) throws IOException {
 
         boolean deliver = false;
@@ -75,6 +85,32 @@ public class UniformReliableBroadcast {
         }
         return deliver;
     }
+
+
+    /* For Local Causal Deliver */
+    public boolean Deliver(MessageModel message, MessageModel originalMessage, int content, int portReceived, InetAddress addressReceived, int[] vectorClock) throws IOException {
+
+        boolean deliver = false;
+        if (bestEffortBroadcast.Deliver(message, content, portReceived, addressReceived)) {
+            ack.computeIfAbsent(originalMessage, x ->  new AtomicInteger(0));
+            ack.computeIfPresent(originalMessage, (key, value) -> value).incrementAndGet();
+
+            if (!forward.containsKey(originalMessage)) {
+                forward.put(originalMessage, new AtomicInteger(1));
+                int id = SendEvent.NextId();
+                bestEffortBroadcast.Broadcast(content, originalMessage.getProcessId(), originalMessage.getMessageId(),
+                        ProtocolTypeEnum.LocalCausalBroadcast, id, vectorClock);
+            }
+        }
+        if (forward.containsKey(originalMessage)) {
+            if (canDeliver(originalMessage) && !delivered.containsKey(originalMessage)) {
+                delivered.put(originalMessage, new AtomicInteger(1));
+                deliver = true;
+            }
+        }
+        return deliver;
+    }
+
 
     public boolean canDeliver(MessageModel originalMessage) {
 

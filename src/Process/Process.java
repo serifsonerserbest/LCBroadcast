@@ -38,6 +38,7 @@ public class Process {
     public int Port;
     public Logger Logger;
     public ArrayList<ProcessModel> processes = new ArrayList<ProcessModel>();
+    public boolean[] dependencies;
 
     private Process() {
     }
@@ -110,8 +111,8 @@ public class Process {
             buff = new BufferedReader(new FileReader(settingFileName));
 
             String num = buff.readLine();
-            int processNum = Integer.parseInt(num);
-            for (int i = 0; i < processNum; i++) {
+            int numOfProcesses = Integer.parseInt(num);
+            for (int i = 0; i < numOfProcesses; i++) {
                 String process = buff.readLine();
                 String[] splitted = process.split("\\s+");
                 if (Integer.parseInt(splitted[0]) == Id) {
@@ -120,6 +121,19 @@ public class Process {
 
                 processes.add(new ProcessModel(Integer.parseInt(splitted[0]), InetAddress.getByName(splitted[1]), Integer.parseInt(splitted[2])));
             }
+            dependencies = new boolean[numOfProcesses + 1];
+
+            for (int i = 0; i < numOfProcesses; i++) {
+                String process = buff.readLine();
+                String[] splitted = process.split("\\s+");
+                if (Integer.parseInt(splitted[0]) == Id){
+                    for(int j =1; j < splitted.length; j++ ){
+                        int processId = Integer.parseInt(splitted[j]);
+                        dependencies[processId] = true;
+                    }
+                }
+            }
+            dependencies[Id] = true;
         } catch (Exception e) {
             System.out.println("Exception while parsing file:" + e);
         }

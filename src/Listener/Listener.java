@@ -4,6 +4,7 @@ import AppSettings.ApplicationSettings;
 import BestEffordBroadcast.BestEffortBroadcast;
 import Enums.ProtocolTypeEnum;
 import FIFOBroadcast.FIFOBroadcast;
+import LocalCausalBroadcast.LocalCausalBroadcast;
 import Models.MessageModel;
 import PerfectLink.PerfectLink;
 import UniformReliableBroadcast.UniformReliableBroadcast;
@@ -26,13 +27,16 @@ public class Listener {
     BestEffortBroadcast bestEffortBroadcast;
     UniformReliableBroadcast uniformReliableBroadcast;
     FIFOBroadcast fifoBroadcast;
+    LocalCausalBroadcast localCausalBroadcast;
 
-    public Listener(PerfectLink perfectLink, BestEffortBroadcast bestEffortBroadcast, UniformReliableBroadcast uniformReliableBroadcast, FIFOBroadcast fifoBroadcast) {
+
+    public Listener(PerfectLink perfectLink, BestEffortBroadcast bestEffortBroadcast, UniformReliableBroadcast uniformReliableBroadcast, FIFOBroadcast fifoBroadcast, LocalCausalBroadcast localCausalBroadcast) {
         //System.out.println("Listening ...");
         this.perfectLink = perfectLink;
         this.bestEffortBroadcast = bestEffortBroadcast;
         this.uniformReliableBroadcast = uniformReliableBroadcast;
         this.fifoBroadcast = fifoBroadcast;
+        this.localCausalBroadcast = localCausalBroadcast;
     }
 
     public void Start() throws IOException {
@@ -108,7 +112,21 @@ public class Listener {
                     int fifoId = messageArray[6];
 
                     fifoBroadcast.Deliver(message, messageOriginal, content, portReceived, addressReceived, fifoId);
-                } else {
+                } else if (protocol == ProtocolTypeEnum.LocalCausalBroadcast.ordinal()) {
+
+                    int originalProcessId = messageArray[4];
+                    int originalMessageId = messageArray[5];
+                    MessageModel messageOriginal = new MessageModel(originalMessageId, originalProcessId);
+
+                    int numOfProcesses = Process.getInstance().processes.size();
+                    int [] vectorClock = new int[numOfProcesses + 1];
+                    for (int j= 1; j <= numOfProcesses; j++){
+                        vectorClock[j] = messageArray[5 + j];
+                    }
+
+                    localCausalBroadcast.Deliver(message, messageOriginal, content, portReceived, addressReceived, vectorClock);
+
+                }else {
                     System.out.println("Unknown protocol " + protocol);
                     return;
                 }

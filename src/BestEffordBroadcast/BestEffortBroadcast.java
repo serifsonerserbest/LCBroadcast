@@ -48,6 +48,15 @@ public class BestEffortBroadcast {
         }
     }
 
+    //** For LocalCausalBroadcast *//*
+    public synchronized void Broadcast(int content, int originalProcessId, int originalMessageId, ProtocolTypeEnum protocol, int messageId, int[] vectorClock) {
+
+        ArrayList<ProcessModel> processes = Process.getInstance().processes;
+        for (int i = 0; i < processes.size(); i++) {
+            perfectlink.Send(content, processes.get(i).address, processes.get(i).port, protocol, originalProcessId, originalMessageId, messageId, vectorClock);
+        }
+    }
+
     public boolean Deliver(MessageModel message, int content, int portReceived, InetAddress addressReceived) throws IOException {
 
         return perfectlink.Deliver(message, content, portReceived, addressReceived);

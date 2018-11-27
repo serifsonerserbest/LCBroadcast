@@ -30,7 +30,7 @@ public class SendEvent {
         return messageId.incrementAndGet();
     }
 
-    public void SendMessage(int content, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int messageId, int fifoId) {
+    public void SendMessage(int content, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int messageId, int fifoId, int[] vectorClock) {
 
         InetSocketAddress key = new InetSocketAddress(destAddress, destPort);
         if(!threadPoolLst.containsKey(key))
@@ -45,7 +45,7 @@ public class SendEvent {
             //threadPool.setKeepAliveTime(5, TimeUnit.MINUTES);
         }
 
-        ThreadSend thread = new ThreadSend(destPort, destAddress, content, messageId, protocol, originalProcessId, originalMessageId, fifoId);
+        ThreadSend thread = new ThreadSend(destPort, destAddress, content, messageId, protocol, originalProcessId, originalMessageId, fifoId, vectorClock);
         if(Process.getInstance().IsRunning) {
             threadPoolLst.get(key).submit(thread);
         }
@@ -65,9 +65,10 @@ public class SendEvent {
         int originalProcessId;
         int originalMessageId;
         int fifoId;
+        int[] vectorClock;
 
         // ThreadSend constructor
-        public ThreadSend(int destPort, InetAddress destAddress, int content, int messageId, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int fifoId) {
+        public ThreadSend(int destPort, InetAddress destAddress, int content, int messageId, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int fifoId, int[] vectorClock) {
             this.destPort = destPort;
             this.destAddress = destAddress;
             this.content = content;
@@ -77,6 +78,23 @@ public class SendEvent {
             this.originalProcessId = originalProcessId;
             this.fifoId = fifoId;
             this.setName("Send Thread " + messageId);
+            this.vectorClock = vectorClock;
+        }
+
+        private int[] concatenate(int[]... arrays) {
+            int length = 0;
+            for (int[] array : arrays) {
+                length += array.length;
+            }
+            int[] result = new int[length];
+            int pos = 0;
+            for (int[] array : arrays) {
+                for (int element : array) {
+                    result[pos] = element;
+                    pos++;
+                }
+            }
+            return result;
         }
 
         public void run() {
@@ -85,6 +103,10 @@ public class SendEvent {
             byte[] in_data = new byte[32];    // ack packet with no data
 
             int[] data = {this.messageId, protocol.ordinal(), this.content, Process.getInstance().Id, originalProcessId, originalMessageId, fifoId};
+            if (vectorClock != null){
+                data = concatenate(data, vectorClock);
+            }
+
             ByteBuffer byteBuffer = ByteBuffer.allocate(data.length * 4);
             IntBuffer intBuffer = byteBuffer.asIntBuffer();
             intBuffer.put(data);
@@ -120,12 +142,12 @@ public class SendEvent {
                     socketOut.receive(receivePacket);
                     ByteBuffer wrapped = ByteBuffer.wrap(receivePacket.getData()); // big-endian by default
                     int messageId = wrapped.getInt();
-                    System.out.println("Ack receive id: " + messageId + " expected :" + this.messageId + " port " + socketOut.getLocalPort());
+                   // System.out.println("Ack receive id: " + messageId + " expected :" + this.messageId + " port " + socketOut.getLocalPort());
                     if (this.messageId == messageId) {
                         threadPoolLst.computeIfPresent(new InetSocketAddress(destAddress, destPort), (x, y) ->{
                             if(y.getCorePoolSize() < ApplicationSettings.getInstance().SenderThreadPoolSize)
                             {
-                                y.setCorePoolSize(y.getCorePoolSize() + 1);
+                               // y.setCorePoolSize(y.getCorePoolSize() + 1);
                             }
                             return y;
                         });
@@ -136,7 +158,7 @@ public class SendEvent {
                        // y.submit(new ThreadSend(destPort, destAddress, content, messageId, protocol, originalProcessId, originalMessageId, fifoId));
                         if(y.getCorePoolSize() > 1)
                         {
-                            y.setCorePoolSize(y.getCorePoolSize() - 1);
+                           // y.setCorePoolSize(y.getCorePoolSize() - 1);
                         }
                         return y;
                     });

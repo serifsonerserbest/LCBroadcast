@@ -4,5 +4,6 @@ public enum ProtocolTypeEnum {
     PerfectLink,
     BestEffortBroadcast,
     UniformReliableBroadcast,
-    FIFOBroadcast
+    FIFOBroadcast,
+    LocalCausalBroadcast
 }
