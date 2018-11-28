@@ -32,7 +32,6 @@ public class LocalCausalBroadcast {
             vectorClock.IncOrCopy(true, i);
             pending[i] = new LinkedList<>();
         }
-
     }
 
     public static LocalCausalBroadcast getInst() {
@@ -40,9 +39,9 @@ public class LocalCausalBroadcast {
         return localCausalBroadcast;
     }
 
-    private synchronized void PrintVC(ThreadSafeArray VC){
-        int[] copy = VC.IncOrCopy(false, 0);
-        for (int i = 0; i < VC.Length(); i++) {
+    public synchronized void PrintVC(){
+        int[] copy = vectorClock.IncOrCopy(false, 0);
+        for (int i = 0; i < vectorClock.Length(); i++) {
             if (i > 0) {
                 System.out.print(", ");
             }
@@ -59,6 +58,20 @@ public class LocalCausalBroadcast {
         return true;
     }
 
+    public synchronized  void PrintPending(){
+        int numOfProcesses = Process.getInstance().processes.size();
+        System.out.println("");
+        System.out.println("PENDING:");
+        System.out.println("");
+        for (int i = 0; i <numOfProcesses + 1; i++) {
+            if (i > 0) {
+                System.out.print(", ");
+            }
+            System.out.print(pending[i].size());
+        }
+        System.out.println("");
+    }
+
     public synchronized void Broadcast(int content){
 
         // Create new vector clock to only send dependencies
@@ -68,14 +81,16 @@ public class LocalCausalBroadcast {
 
         if(!isEqual(vectorClock, VCBroadcast))
             System.out.println("VECTOR CLOCKS ARE NOT THE SAME !!");
-        System.out.println("b " + Process.getInstance().Id + " " + vectorClock.Get(Process.getInstance().Id));
-        PrintVC(vectorClock);
+        //System.out.println("b " + Process.getInstance().Id + " " + vectorClock.Get(Process.getInstance().Id));
+        //PrintVC();
 
         Process.getInstance().Logger.WriteToLog("b " + Process.getInstance().Id);
 
         uniformReliableBroadcast.Broadcast(content, VCBroadcast);
         //vectorClock.incrementAndGet(Process.getInstance().Id);
         vectorClock.IncOrCopy(true, Process.getInstance().Id);
+
+        //TODO: DELIVER CURRENT MESSAGE (NEED TO CALL DELIVER PENDING SINCE VC IS CHANGING)
     }
 
     public synchronized void Deliver(MessageModel message, MessageModel originalMessage, int content, int portReceived, InetAddress addressReceived, int[] vectorClock) throws IOException {
@@ -107,24 +122,15 @@ public class LocalCausalBroadcast {
                         deliver = false;
                 }
                 if (deliver) {
+                    // remove current message and initialize iterator
                     it.remove();
-                    System.out.println("d " + pId + " " + vectorClock.Get(pId));
-                    PrintVC(vectorClock);
+                    it = pending[pId].iterator();
 
+                    System.out.println("d " + pId + " " + vectorClock.Get(pId));
+                    PrintVC();
                     Process.getInstance().Logger.WriteToLog("d " + pId + " " + vectorClock.Get(pId));
                     //vectorClock.incrementAndGet(pId);
                     vectorClock.IncOrCopy(true, pId);
-                }
-                else{
-                    System.out.println("Waiting for:");
-                    for (int i = 0; i < numOfProcesses; i++) {
-                        if (i > 0) {
-                            System.out.print(", ");
-                        }
-                        System.out.print(copyVC[i]);
-                    }
-                    System.out.println("");
-                    PrintVC(vectorClock);
                 }
             }
         }

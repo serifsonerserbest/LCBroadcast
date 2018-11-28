@@ -39,7 +39,7 @@ public class Da_proc {
     }
 
     private static void TestSendLocalCausal(LocalCausalBroadcast localCausalBroadcast) throws UnknownHostException {
-        for (int x = 0; x < 1000; x++) {
+        for (int x = 0; x < 100; x++) {
             localCausalBroadcast.Broadcast(1);
         }
     }
@@ -98,6 +98,8 @@ public class Da_proc {
             TestSendLocalCausal(localCausalBroadcast);
 
             Thread.sleep(100000);
+            LocalCausalBroadcast.getInst().PrintVC();
+            LocalCausalBroadcast.getInst().PrintPending();
             System.out.println("Creating Log File");
             Process.getInstance().Logger.WriteLogToFile();
             System.out.println("Log File created");
