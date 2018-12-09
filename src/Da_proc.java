@@ -39,7 +39,7 @@ public class Da_proc {
     }
 
     private static void TestSendLocalCausal(LocalCausalBroadcast localCausalBroadcast) throws UnknownHostException {
-        for (int x = 0; x < 100; x++) {
+        for (int x = 0; x < 500; x++) {
             localCausalBroadcast.Broadcast(1);
         }
     }
@@ -52,7 +52,7 @@ public class Da_proc {
         int amountToSend;
 
         if (ApplicationSettings.getInstance().isDebug) {
-            processId = 1;
+            processId = 5;
             membershipFileName = "membership.txt";
             amountToSend = 0;
         } else {
@@ -65,6 +65,7 @@ public class Da_proc {
         Process.getInstance().Init(processId, membershipFileName, amountToSend);
 
         System.out.print("PROCESS NAME: " + Process.getInstance().Id);
+        System.out.println("");
 
         // INITIALIZE PROTOCOLS
         PerfectLink perfectLink = new PerfectLink();

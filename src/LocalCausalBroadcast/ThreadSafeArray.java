@@ -1,5 +1,6 @@
 package LocalCausalBroadcast;
 
+import Process.Process;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 
 public class ThreadSafeArray {
@@ -11,7 +12,7 @@ public class ThreadSafeArray {
         this.length = length;
     }
 
-    public synchronized int[] IncOrCopy(boolean incOrCopy, int index){
+    public synchronized int[] IncOrCopy(boolean incOrCopy, int index, boolean[] dependencyMask){
         //Increment
         if(incOrCopy){
             array.incrementAndGet(index);
@@ -22,7 +23,7 @@ public class ThreadSafeArray {
             int[] copy = new int[length];
             for(int i= 0; i < length; i++){
                 //TODO: Check dependencies
-                if (true)
+                if (dependencyMask[i])
                     copy[i] = array.get(i);
             }
             return copy;
