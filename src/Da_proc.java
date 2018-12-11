@@ -47,9 +47,9 @@ public class Da_proc {
         int amountToSend;
 
         if (ApplicationSettings.getInstance().isDebug) {
-            processId = 2;
+            processId = 3;
             membershipFileName = "membership.txt";
-            amountToSend = 100;
+            amountToSend = 1000;
         } else {
             processId = Integer.parseInt(args[0]);
             membershipFileName = args[1];
@@ -58,7 +58,6 @@ public class Da_proc {
 
         // PROCESS MEMBERSHIP FILE
         Process.getInstance().Init(processId, membershipFileName, amountToSend);
-
         // INITIALIZE PROTOCOLS
         PerfectLink perfectLink = new PerfectLink();
         BestEffortBroadcast bestEffortBroadcast = new BestEffortBroadcast();
@@ -85,16 +84,18 @@ public class Da_proc {
                 } catch (UnknownHostException e) {
                     e.printStackTrace();
                 }*/
-            }, 20, TimeUnit.SECONDS);
+            }, 40, TimeUnit.SECONDS);
             executor.schedule(() -> {
                 try {
+                    LocalCausalBroadcast.getInst().PrintVC();
+                    LocalCausalBroadcast.getInst().PrintPending();
                     System.out.println("Creating Log File");
                     Process.getInstance().Logger.WriteLogToFile();
                     System.out.println("Log File created");
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            }, 30, TimeUnit.SECONDS);
+            }, 60, TimeUnit.SECONDS);
 
             /*new Thread(()-> {
                 // TEST PROTOCOL

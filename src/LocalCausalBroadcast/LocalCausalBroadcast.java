@@ -23,6 +23,8 @@ public class LocalCausalBroadcast {
 
     private ConcurrentLinkedQueue<int[]>[] pending; // Keeps vector clocks according to process id
     private boolean[] dependencyMask;
+    private boolean[] copyMask;
+
 
     private LocalCausalBroadcast(){
         int numOfProcesses = Process.getInstance().processes.size();
@@ -31,10 +33,12 @@ public class LocalCausalBroadcast {
         vectorClock = new CopyOnWriteArrayList<AtomicInteger>();
         pending = new ConcurrentLinkedQueue[numOfProcesses + 1];
         dependencyMask = Process.getInstance().dependencies;
+        copyMask = new boolean[numOfProcesses + 1];
 
         for (int i = 0; i <= numOfProcesses; i++){
             vectorClock.add(new AtomicInteger(1));
             pending[i] = new ConcurrentLinkedQueue<>();
+            copyMask[i] = true;
         }
 
     }
@@ -44,20 +48,19 @@ public class LocalCausalBroadcast {
         return localCausalBroadcast;
     }
 
-    public int[] ArrayCopy(CopyOnWriteArrayList<AtomicInteger> array)
+    public int[] ArrayCopy(CopyOnWriteArrayList<AtomicInteger> array, boolean[] mask)
     {
         int[] copy = new int[array.size()];
         for(int i= 0; i < array.size(); i++){
-            //TODO: Check dependencies
-            if (true)
+            if (mask[i])
                 copy[i] = array.get(i).get();
         }
         return copy;
     }
 
-    private void PrintVC(CopyOnWriteArrayList<AtomicInteger> VC){
-        int[] copy = ArrayCopy(VC);
-        for (int i = 0; i < VC.size(); i++) {
+    public void PrintVC(){
+        int[] copy = ArrayCopy(vectorClock, copyMask);
+        for (int i = 0; i < vectorClock.size(); i++) {
             if (i > 0) {
                 System.out.print(", ");
             }
@@ -74,19 +77,36 @@ public class LocalCausalBroadcast {
         return true;
     }
 
+    public void PrintPending(){
+        int numOfProcesses = Process.getInstance().processes.size();
+        System.out.println("");
+        System.out.println("PENDING:");
+        System.out.println("");
+        for (int i = 0; i <numOfProcesses + 1; i++) {
+            if (i > 0) {
+                System.out.print(", ");
+            }
+            System.out.print(pending[i].size());
+        }
+        System.out.println("");
+    }
+
     public void Broadcast(int content){
 
         // Create new vector clock to only send dependencies
         // TODO: Change it with elementwise multiplication of two matrices
         int numOfProcesses = Process.getInstance().processes.size();
-        int[] VCBroadcast = ArrayCopy(vectorClock);
+        int[] VCBroadcast = ArrayCopy(vectorClock, dependencyMask);
 
-        if(!isEqual(vectorClock, VCBroadcast))
-            System.out.println("VECTOR CLOCKS ARE NOT THE SAME !!");
-        System.out.println("b " + Process.getInstance().Id + " " + vectorClock.get(Process.getInstance().Id));
-        PrintVC(vectorClock);
+       // if(!isEqual(vectorClock, VCBroadcast))
+         //   System.out.println("VECTOR CLOCKS ARE NOT THE SAME !!");
 
         Process.getInstance().Logger.WriteToLog("b " + Process.getInstance().Id);
+        System.out.println("b " + Process.getInstance().Id + " " + vectorClock.get(Process.getInstance().Id));
+        Process.getInstance().Logger.WriteToLog("d " + Process.getInstance().Id + " " + vectorClock.get(Process.getInstance().Id));
+        System.out.println("d " + Process.getInstance().Id + " " + vectorClock.get(Process.getInstance().Id));
+        PrintVC();
+
 
         uniformReliableBroadcast.Broadcast(content, VCBroadcast);
         //vectorClock.incrementAndGet(Process.getInstance().Id);
@@ -112,7 +132,7 @@ public class LocalCausalBroadcast {
             //Check pending VCs for each process
             Iterator<int[]> it = pending[pId].iterator();
             while (it.hasNext()) {
-                int[] copyVC = ArrayCopy(vectorClock);
+                int[] copyVC = ArrayCopy(vectorClock, copyMask);
                 int[] VCx = it.next();
                 boolean deliver = true;
 
@@ -123,23 +143,13 @@ public class LocalCausalBroadcast {
                 }
                 if (deliver) {
                     it.remove();
+                    it = pending[pId].iterator();
                     System.out.println("d " + pId + " " + vectorClock.get(pId));
-                    PrintVC(vectorClock);
+                    PrintVC();
 
                     Process.getInstance().Logger.WriteToLog("d " + pId + " " + vectorClock.get(pId));
                     //vectorClock.incrementAndGet(pId);
                     vectorClock.get(pId).incrementAndGet();
-                }
-                else{
-                    System.out.println("Waiting for:");
-                    for (int i = 0; i < numOfProcesses; i++) {
-                        if (i > 0) {
-                            System.out.print(", ");
-                        }
-                        System.out.print(copyVC[i]);
-                    }
-                    System.out.println("");
-                    PrintVC(vectorClock);
                 }
             }
         }
