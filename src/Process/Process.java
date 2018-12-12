@@ -73,9 +73,7 @@ public class Process {
     public void Start()
     {
         IsRunning = true;
-        for (Map.Entry<InetSocketAddress, ThreadPoolExecutor> entry : SendEvent.threadPoolLst.entrySet()) {
-            entry.getValue().prestartAllCoreThreads();
-        }
+        SendEvent.threadPool.prestartAllCoreThreads();
     }
     public DatagramSocket GetSocketFromQueue()
     {

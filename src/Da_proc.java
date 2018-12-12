@@ -49,7 +49,7 @@ public class Da_proc {
         if (ApplicationSettings.getInstance().isDebug) {
             processId = 3;
             membershipFileName = "membership.txt";
-            amountToSend = 1000;
+            amountToSend = 10000;
         } else {
             processId = Integer.parseInt(args[0]);
             membershipFileName = args[1];
@@ -84,8 +84,8 @@ public class Da_proc {
                 } catch (UnknownHostException e) {
                     e.printStackTrace();
                 }*/
-            }, 40, TimeUnit.SECONDS);
-            executor.schedule(() -> {
+            }, 20, TimeUnit.SECONDS);
+            /*executor.schedule(() -> {
                 try {
                     LocalCausalBroadcast.getInst().PrintVC();
                     LocalCausalBroadcast.getInst().PrintPending();
@@ -95,7 +95,7 @@ public class Da_proc {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            }, 60, TimeUnit.SECONDS);
+            }, 40, TimeUnit.SECONDS);*/
 
             /*new Thread(()-> {
                 // TEST PROTOCOL
