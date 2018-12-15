@@ -15,14 +15,18 @@ public class PerfectLink {
     private SendEvent sendEvent;
     private DeliverEvent deliverEvent;
     private static volatile ConcurrentHashMap<MessageModel, Boolean> receivedMessages;
+    private static volatile PerfectLink perfectLink = new PerfectLink();
 
-    public PerfectLink() {
+    private PerfectLink() {
 
         sendEvent = new SendEvent();
         deliverEvent = new DeliverEvent();
         receivedMessages = new ConcurrentHashMap<>();
     }
+    public static PerfectLink getInst() {
 
+        return perfectLink;
+    }
     /**
      * For PerfectLink
      */

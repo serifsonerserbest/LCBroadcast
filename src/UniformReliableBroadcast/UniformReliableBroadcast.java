@@ -17,18 +17,22 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class UniformReliableBroadcast {
 
     private BestEffortBroadcast bestEffortBroadcast;
+    private static volatile UniformReliableBroadcast uniformReliableBroadcast = new UniformReliableBroadcast();
 
     private volatile ConcurrentHashMap<MessageModel, AtomicInteger> ack;
     private volatile ConcurrentHashMap<MessageModel, AtomicInteger> delivered;
     private volatile ConcurrentHashMap<MessageModel, AtomicInteger> forward;
 
-    public UniformReliableBroadcast() {
+    private UniformReliableBroadcast() {
 
-        bestEffortBroadcast = new BestEffortBroadcast();
+        bestEffortBroadcast = BestEffortBroadcast.getInst();
         ack = new ConcurrentHashMap<>();
         delivered = new ConcurrentHashMap<>();
         forward = new ConcurrentHashMap<>();
 
+    }
+    public static UniformReliableBroadcast getInst() {
+        return uniformReliableBroadcast;
     }
 
     public void Broadcast(int content) {

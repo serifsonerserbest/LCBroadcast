@@ -2,6 +2,8 @@ package PerfectLink;
 
 import AppSettings.ApplicationSettings;
 import Enums.ProtocolTypeEnum;
+import Models.ProcessModel;
+import PerfectLink.Models.MessageWrapper;
 import Process.Process;
 
 import java.io.IOException;
@@ -17,41 +19,18 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class SendEvent {
 
-    class MessageWrapper{
-       public int destPort;
-       public InetAddress destAddress;
-       public int content;
-       public int messageId;
-       public ProtocolTypeEnum protocol;
-       public int originalProcessId;
-       public int originalMessageId;
-       public int fifoId;
-       public int[] vectorClock;
-
-       public MessageWrapper(int destPort, InetAddress destAddress, int content, int messageId, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int fifoId, int[] vectorClock)
-       {
-            this.destPort = destPort;
-            this.destAddress = destAddress;
-            this.content = content;
-            this.messageId = messageId;
-            this.protocol = protocol;
-            this.originalProcessId = originalProcessId;
-            this.originalMessageId = originalMessageId;
-            this.fifoId = fifoId;
-            this.vectorClock = vectorClock;
-       }
-    }
 
 
-    public volatile static AtomicInteger messageId ;
+    private volatile static AtomicInteger messageId ;
 
-    public static volatile LinkedHashMap<InetSocketAddress, ConcurrentLinkedDeque<MessageWrapper>> messageBuckets= new LinkedHashMap<>();
+    private static volatile LinkedHashMap<InetSocketAddress, ConcurrentLinkedDeque<MessageWrapper>> messageBuckets= new LinkedHashMap<>();
 
-    public volatile static AtomicInteger currentBucketToSend;
+    private static volatile ArrayList<ConcurrentLinkedDeque<MessageWrapper>> messageBucketsArray = new ArrayList<>();
 
-    public static ThreadPoolExecutor threadPool = (ThreadPoolExecutor)Executors.newFixedThreadPool(ApplicationSettings.getInstance().SenderThreadPoolSize);
+    private volatile static AtomicInteger currentBucketToSend;
 
-    //volatile ThreadPoolExecutor threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool( ApplicationSettings.getInstance().SenderThreadPoolSize);
+    private static ThreadPoolExecutor threadPool = (ThreadPoolExecutor)Executors.newFixedThreadPool(ApplicationSettings.getInstance().SenderThreadPoolSize);
+
 
     public SendEvent() {
         messageId = new AtomicInteger(0);
@@ -60,6 +39,13 @@ public class SendEvent {
         {
             threadPool.getQueue().add(new SenderThread());
         }
+
+        for (ProcessModel process : Process.getInstance().processes) {
+            ConcurrentLinkedDeque<MessageWrapper> dequeu = new ConcurrentLinkedDeque<>();
+            messageBuckets.put(new InetSocketAddress(process.address, process.port), dequeu);
+            messageBucketsArray.add(dequeu);
+        }
+        threadPool.prestartAllCoreThreads();
     }
 
     public static int NextId() {
@@ -69,12 +55,7 @@ public class SendEvent {
     public void SendMessage(int content, InetAddress destAddress, int destPort, ProtocolTypeEnum protocol, int originalProcessId, int originalMessageId, int messageId, int fifoId, int[] vectorClock) {
 
         InetSocketAddress key = new InetSocketAddress(destAddress, destPort);
-        if(!messageBuckets.containsKey(key))
-        {
-            ConcurrentLinkedDeque<MessageWrapper> dequeu = new ConcurrentLinkedDeque<>();
-            messageBuckets.put(key, dequeu);
-            //threadPool.setKeepAliveTime(5, TimeUnit.MINUTES);
-        }
+
 
         MessageWrapper message = new MessageWrapper(destPort, destAddress, content, messageId, protocol, originalProcessId, originalMessageId, fifoId, vectorClock);
         messageBuckets.get(key).add(message);
@@ -85,18 +66,9 @@ public class SendEvent {
            while(true)
            {
 
-               if(messageBuckets.size() == 0)
-               {
-                   try {
-                       Thread.sleep(10);
-                   } catch (InterruptedException e) {
-                       e.printStackTrace();
-                   }
-                   continue;
-               }
                int currentBucket = currentBucketToSend.getAndUpdate(x -> x >= messageBuckets.size() - 1 ? 0 : currentBucketToSend.get() + 1);
 
-               MessageWrapper message = ((ConcurrentLinkedDeque<MessageWrapper>)messageBuckets.values().toArray()[currentBucket]).poll();
+               MessageWrapper message = messageBucketsArray.get(currentBucket).poll();
                if(message == null)
                 {
                     try {

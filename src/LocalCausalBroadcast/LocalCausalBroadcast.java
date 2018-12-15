@@ -29,7 +29,7 @@ public class LocalCausalBroadcast {
     private LocalCausalBroadcast(){
         int numOfProcesses = Process.getInstance().processes.size();
 
-        uniformReliableBroadcast = new UniformReliableBroadcast();
+        uniformReliableBroadcast = UniformReliableBroadcast.getInst();
         vectorClock = new CopyOnWriteArrayList<AtomicInteger>();
         pending = new ConcurrentLinkedQueue[numOfProcesses + 1];
         dependencyMask = Process.getInstance().dependencies;

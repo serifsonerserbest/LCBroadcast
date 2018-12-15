@@ -28,7 +28,6 @@ import sun.nio.ch.ThreadPool;
 
 public class Process {
 
-    public boolean IsRunning = false;
     private volatile static Process process = new Process();
 
     private volatile ConcurrentLinkedQueue<DatagramSocket> socketQueue = new ConcurrentLinkedQueue <>();
@@ -71,11 +70,6 @@ public class Process {
         return null;
     }
 
-    public void Start()
-    {
-        IsRunning = true;
-        SendEvent.threadPool.prestartAllCoreThreads();
-    }
     public DatagramSocket GetSocketFromQueue()
     {
         DatagramSocket socket = socketQueue.poll();
@@ -100,7 +94,7 @@ public class Process {
 
         DiagnosticSignalHandler.install("TERM", GetTermHandler());
         DiagnosticSignalHandler.install("INT", GetIntHandler());
-        DiagnosticSignalHandler.install("USR2", GetUsr1Handler());
+        DiagnosticSignalHandler.install("USR2", GetUsr2Handler());
     }
 
     private void ReadSettingFile(String settingFileName) {
@@ -158,7 +152,7 @@ public class Process {
         };
     }
 
-    private SignalHandler GetUsr1Handler() {
+    private SignalHandler GetUsr2Handler() {
 
         return sig -> {
             System.out.println("USR2");

@@ -20,13 +20,14 @@ public class FIFOBroadcast {
 
     private FIFOBroadcast() {
 
-        uniformReliableBroadcast = new UniformReliableBroadcast();
+        uniformReliableBroadcast = UniformReliableBroadcast.getInst();
         lsn = 0;
         pending = new ConcurrentHashMap<>();
         int numberOfProcesses = Process.getInstance().processes.size();
         next = new int[numberOfProcesses + 1];
-        for (int i = 0; i <= numberOfProcesses; ++i)
+        for (int i = 0; i <= numberOfProcesses; ++i) {
             next[i] = 1;
+        }
     }
 
     public static FIFOBroadcast getInst() {

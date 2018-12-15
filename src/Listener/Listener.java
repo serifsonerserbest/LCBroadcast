@@ -21,22 +21,22 @@ import java.util.Arrays;
 import java.util.concurrent.*;
 
 public class Listener {
-    DatagramSocket socketIn;
+    private DatagramSocket socketIn;
 
-    PerfectLink perfectLink;
-    BestEffortBroadcast bestEffortBroadcast;
-    UniformReliableBroadcast uniformReliableBroadcast;
-    FIFOBroadcast fifoBroadcast;
-    LocalCausalBroadcast localCausalBroadcast;
+    private PerfectLink perfectLink;
+    private BestEffortBroadcast bestEffortBroadcast;
+    private UniformReliableBroadcast uniformReliableBroadcast;
+    private FIFOBroadcast fifoBroadcast;
+    private LocalCausalBroadcast localCausalBroadcast;
 
 
-    public Listener(PerfectLink perfectLink, BestEffortBroadcast bestEffortBroadcast, UniformReliableBroadcast uniformReliableBroadcast, FIFOBroadcast fifoBroadcast, LocalCausalBroadcast localCausalBroadcast) {
+    public Listener() {
         //System.out.println("Listening ...");
-        this.perfectLink = perfectLink;
-        this.bestEffortBroadcast = bestEffortBroadcast;
-        this.uniformReliableBroadcast = uniformReliableBroadcast;
-        this.fifoBroadcast = fifoBroadcast;
-        this.localCausalBroadcast = localCausalBroadcast;
+        this.perfectLink = PerfectLink.getInst();
+        this.bestEffortBroadcast = BestEffortBroadcast.getInst();
+        this.uniformReliableBroadcast = UniformReliableBroadcast.getInst();
+        this.fifoBroadcast = FIFOBroadcast.getInst();
+        this.localCausalBroadcast = LocalCausalBroadcast.getInst();
     }
 
     public void Start() throws IOException {
@@ -48,8 +48,6 @@ public class Listener {
         int portReceived;
 
         ThreadPoolExecutor  threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(ApplicationSettings.getInstance().ListenerThreadPoolSize);
-        //threadPool.setCorePoolSize(1);
-        //threadPool.setKeepAliveTime(200, TimeUnit.MILLISECONDS);
         threadPool.prestartCoreThread();
         while (true) {
             //receiving packet

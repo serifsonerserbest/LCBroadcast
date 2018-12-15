@@ -7,7 +7,7 @@ public class ApplicationSettings {
     public final boolean isDebug;
     public final int timeoutVal = 300; // 300ms until timeout
     public final int ListenerThreadPoolSize = 1 /*(Runtime.getRuntime().availableProcessors() + 1) * 30*/;
-    public final int SenderThreadPoolSize = 2/*(Runtime.getRuntime().availableProcessors() + 1) * 30*/;
+    public final int SenderThreadPoolSize = 1/*(Runtime.getRuntime().availableProcessors() + 1) * 30*/;
 
 
     private ApplicationSettings() {

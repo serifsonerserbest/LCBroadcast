@@ -14,12 +14,14 @@ import java.util.ArrayList;
 
 public class BestEffortBroadcast {
 
-    private PerfectLink perfectlink;
+    private PerfectLink perfectlink = PerfectLink.getInst();
+    private static volatile BestEffortBroadcast bestEffortBroadcast = new BestEffortBroadcast();
 
-    public BestEffortBroadcast() {
-        perfectlink = new PerfectLink();
+    private BestEffortBroadcast() {
     }
-
+    public static BestEffortBroadcast getInst() {
+        return bestEffortBroadcast;
+    }
     public void Broadcast(int message) {
 
         ArrayList<ProcessModel> processes = Process.getInstance().processes;
