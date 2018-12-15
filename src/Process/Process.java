@@ -2,6 +2,7 @@ package Process;
 
 import AppSettings.ApplicationSettings;
 import FIFOBroadcast.FIFOBroadcast;
+import LocalCausalBroadcast.LocalCausalBroadcast;
 import Models.ProcessModel;
 
 import PerfectLink.SendEvent;
@@ -162,6 +163,9 @@ public class Process {
         return sig -> {
             System.out.println("USR2");
             Start();
+            for (int i = 1; i <= amountMessageToSend; i++) {
+                LocalCausalBroadcast.getInst().Broadcast(i);
+            }
         };
     }
     //endregion

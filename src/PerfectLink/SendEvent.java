@@ -84,12 +84,23 @@ public class SendEvent {
         public void run() {
            while(true)
            {
+
+               if(messageBuckets.size() == 0)
+               {
+                   try {
+                       Thread.sleep(10);
+                   } catch (InterruptedException e) {
+                       e.printStackTrace();
+                   }
+                   continue;
+               }
                int currentBucket = currentBucketToSend.getAndUpdate(x -> x >= messageBuckets.size() - 1 ? 0 : currentBucketToSend.get() + 1);
+
                MessageWrapper message = ((ConcurrentLinkedDeque<MessageWrapper>)messageBuckets.values().toArray()[currentBucket]).poll();
                if(message == null)
                 {
                     try {
-                        Thread.sleep(50);
+                        Thread.sleep(10);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }

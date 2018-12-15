@@ -41,20 +41,23 @@ public class Da_proc {
 
     public static void main(String[] args) throws InterruptedException, IOException {
 
+
         //SYSTEM INPUTS
         int processId;
         String membershipFileName;
         int amountToSend;
 
         if (ApplicationSettings.getInstance().isDebug) {
-            processId = 3;
+            processId = 5;
             membershipFileName = "membership.txt";
-            amountToSend = 10000;
+            amountToSend = 0;
         } else {
             processId = Integer.parseInt(args[0]);
             membershipFileName = args[1];
             amountToSend = Integer.parseInt(args[2]);
         }
+
+        System.out.println("Process " + processId + " started" );
 
         // PROCESS MEMBERSHIP FILE
         Process.getInstance().Init(processId, membershipFileName, amountToSend);
@@ -66,17 +69,15 @@ public class Da_proc {
         LocalCausalBroadcast localCausalBroadcast = LocalCausalBroadcast.getInst();
 
 
-        for (int i = 1; i <= amountToSend; i++) {
-            localCausalBroadcast.getInst().Broadcast(i);
-        }
-
 
         if (ApplicationSettings.getInstance().isDebug) {
 
             final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(0);
             executor.schedule(() -> {
                 Process.getInstance().Start();
-
+                for (int i = 1; i <= amountToSend; i++) {
+                    LocalCausalBroadcast.getInst().Broadcast(i);
+                }
                 /*try {
                     //TestSendPL(perfectLink);
                     //TestSendFIFO(fifoBroadcast);
@@ -85,7 +86,7 @@ public class Da_proc {
                     e.printStackTrace();
                 }*/
             }, 20, TimeUnit.SECONDS);
-            /*executor.schedule(() -> {
+            executor.schedule(() -> {
                 try {
                     LocalCausalBroadcast.getInst().PrintVC();
                     LocalCausalBroadcast.getInst().PrintPending();
@@ -95,7 +96,7 @@ public class Da_proc {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            }, 40, TimeUnit.SECONDS);*/
+            }, 40, TimeUnit.SECONDS);
 
             /*new Thread(()-> {
                 // TEST PROTOCOL
@@ -118,6 +119,7 @@ public class Da_proc {
         }
 
 
+        System.out.println("Process " + processId + " listener started" );
         // INITIALIZE LISTENER
         Listener l = new Listener(perfectLink, bestEffortBroadcast, uniformReliableBroadcast, fifoBroadcast, localCausalBroadcast);
 
