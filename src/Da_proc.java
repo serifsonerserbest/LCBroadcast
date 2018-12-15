@@ -68,13 +68,13 @@ public class Da_proc {
         FIFOBroadcast fifoBroadcast = FIFOBroadcast.getInst();
         LocalCausalBroadcast localCausalBroadcast = LocalCausalBroadcast.getInst();
 
+        Process.getInstance().Start();
 
 
         if (ApplicationSettings.getInstance().isDebug) {
 
             final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(0);
             executor.schedule(() -> {
-                Process.getInstance().Start();
                 for (int i = 1; i <= amountToSend; i++) {
                     LocalCausalBroadcast.getInst().Broadcast(i);
                 }
