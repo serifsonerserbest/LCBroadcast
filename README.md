@@ -1,6 +1,6 @@
 # Localized Causal Broadcast for Decentralized Payment System
 
-This project is a part of the the 'Distributed Algorithms' course at Swiss Federal Institute of Technology. http://dcl.epfl.ch/site/education/da
+This project is a part of the the 'Distributed Algorithms' course at Swiss Federal Institute of Technology Lausanne (EPFL). http://dcl.epfl.ch/site/education/da
 
 The goal of this practical project is to implement the building blocks necessary
 for implementing a decentralized payment system. To this end, we used some underlying
