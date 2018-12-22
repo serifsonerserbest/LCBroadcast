@@ -1,8 +1,10 @@
 package Listener;
 
+import AppSettings.ApplicationSettings;
 import BestEffordBroadcast.BestEffortBroadcast;
 import Enums.ProtocolTypeEnum;
 import FIFOBroadcast.FIFOBroadcast;
+import LocalCausalBroadcast.LocalCausalBroadcast;
 import Models.MessageModel;
 import PerfectLink.PerfectLink;
 import UniformReliableBroadcast.UniformReliableBroadcast;
@@ -16,23 +18,25 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
 import java.util.Arrays;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 public class Listener {
-    DatagramSocket socketIn;
+    private DatagramSocket socketIn;
 
-    PerfectLink perfectLink;
-    BestEffortBroadcast bestEffortBroadcast;
-    UniformReliableBroadcast uniformReliableBroadcast;
-    FIFOBroadcast fifoBroadcast;
+    private PerfectLink perfectLink;
+    private BestEffortBroadcast bestEffortBroadcast;
+    private UniformReliableBroadcast uniformReliableBroadcast;
+    private FIFOBroadcast fifoBroadcast;
+    private LocalCausalBroadcast localCausalBroadcast;
 
-    public Listener(PerfectLink perfectLink, BestEffortBroadcast bestEffortBroadcast, UniformReliableBroadcast uniformReliableBroadcast, FIFOBroadcast fifoBroadcast) {
+
+    public Listener() {
         //System.out.println("Listening ...");
-        this.perfectLink = perfectLink;
-        this.bestEffortBroadcast = bestEffortBroadcast;
-        this.uniformReliableBroadcast = uniformReliableBroadcast;
-        this.fifoBroadcast = fifoBroadcast;
+        this.perfectLink = PerfectLink.getInst();
+        this.bestEffortBroadcast = BestEffortBroadcast.getInst();
+        this.uniformReliableBroadcast = UniformReliableBroadcast.getInst();
+        this.fifoBroadcast = FIFOBroadcast.getInst();
+        this.localCausalBroadcast = LocalCausalBroadcast.getInst();
     }
 
     public void Start() throws IOException {
@@ -43,8 +47,8 @@ public class Listener {
         byte[] messageReceived;
         int portReceived;
 
-        ExecutorService threadPool = Executors.newCachedThreadPool();
-
+        ThreadPoolExecutor  threadPool = (ThreadPoolExecutor) Executors.newFixedThreadPool(ApplicationSettings.getInstance().ListenerThreadPoolSize);
+        threadPool.prestartCoreThread();
         while (true) {
             //receiving packet
             DatagramPacket receivedPacket = new DatagramPacket(packetReceived, packetReceived.length);
@@ -58,7 +62,7 @@ public class Listener {
         }
     }
 
-    public class RequestProcessing implements Runnable {
+    public class RequestProcessing extends Thread {
         byte[] messageReceived;
         int portReceived;
         InetAddress addressReceived;
@@ -85,6 +89,7 @@ public class Listener {
             int content = messageArray[2];
             int processId = messageArray[3];
             MessageModel message = new MessageModel(messageId, processId);
+            this.setName("Send Thread " + messageId);
 
             // DELIVER THE MESSAGE ACCORDING TO PROTOCOL
             try {
@@ -105,7 +110,21 @@ public class Listener {
                     int fifoId = messageArray[6];
 
                     fifoBroadcast.Deliver(message, messageOriginal, content, portReceived, addressReceived, fifoId);
-                } else {
+                } else if (protocol == ProtocolTypeEnum.LocalCausalBroadcast.ordinal()) {
+
+                    int originalProcessId = messageArray[4];
+                    int originalMessageId = messageArray[5];
+                    MessageModel messageOriginal = new MessageModel(originalMessageId, originalProcessId);
+
+                    int numOfProcesses = Process.getInstance().processes.size();
+                    int [] vectorClock = new int[numOfProcesses + 1];
+                    for (int j= 0; j < numOfProcesses + 1; j++){
+                        vectorClock[j] = messageArray[7 + j];
+                    }
+
+                    localCausalBroadcast.Deliver(message, messageOriginal, content, portReceived, addressReceived, vectorClock);
+
+                }else {
                     System.out.println("Unknown protocol " + protocol);
                     return;
                 }

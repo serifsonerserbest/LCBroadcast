@@ -2,27 +2,43 @@ package Process;
 
 import AppSettings.ApplicationSettings;
 import FIFOBroadcast.FIFOBroadcast;
+import LocalCausalBroadcast.LocalCausalBroadcast;
 import Models.ProcessModel;
 
+import PerfectLink.SendEvent;
 import sun.misc.SignalHandler;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import Logger.Logger;
 import SignalHandler.DiagnosticSignalHandler;
+import sun.nio.ch.ThreadPool;
 
 public class Process {
 
     private volatile static Process process = new Process();
+
+    private volatile ConcurrentLinkedQueue<DatagramSocket> socketQueue = new ConcurrentLinkedQueue <>();
+
     int amountMessageToSend;
 
     public int Id;
     public int Port;
     public Logger Logger;
     public ArrayList<ProcessModel> processes = new ArrayList<ProcessModel>();
+    public boolean[] dependencies;
 
     private Process() {
     }
@@ -54,12 +70,31 @@ public class Process {
         return null;
     }
 
+    public DatagramSocket GetSocketFromQueue()
+    {
+        DatagramSocket socket = socketQueue.poll();
+
+        if (socket == null) {
+            try {
+                socket = new DatagramSocket();
+            } catch (SocketException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return socket;
+    }
+
+    public void PutSocketToQuery(DatagramSocket socket)
+    {
+        socketQueue.add(socket);
+    }
     //region Private Methods
     private void SetupSignalHandlers() {
 
         DiagnosticSignalHandler.install("TERM", GetTermHandler());
         DiagnosticSignalHandler.install("INT", GetIntHandler());
-        DiagnosticSignalHandler.install("USR2", GetUsr1Handler());
+        DiagnosticSignalHandler.install("USR2", GetUsr2Handler());
     }
 
     private void ReadSettingFile(String settingFileName) {
@@ -69,8 +104,8 @@ public class Process {
             buff = new BufferedReader(new FileReader(settingFileName));
 
             String num = buff.readLine();
-            int processNum = Integer.parseInt(num);
-            for (int i = 0; i < processNum; i++) {
+            int numOfProcesses = Integer.parseInt(num);
+            for (int i = 0; i < numOfProcesses; i++) {
                 String process = buff.readLine();
                 String[] splitted = process.split("\\s+");
                 if (Integer.parseInt(splitted[0]) == Id) {
@@ -79,6 +114,19 @@ public class Process {
 
                 processes.add(new ProcessModel(Integer.parseInt(splitted[0]), InetAddress.getByName(splitted[1]), Integer.parseInt(splitted[2])));
             }
+            dependencies = new boolean[numOfProcesses + 1];
+
+            for (int i = 0; i < numOfProcesses; i++) {
+                String process = buff.readLine();
+                String[] splitted = process.split("\\s+");
+                if (Integer.parseInt(splitted[0]) == Id){
+                    for(int j =1; j < splitted.length; j++ ){
+                        int processId = Integer.parseInt(splitted[j]);
+                        dependencies[processId] = true;
+                    }
+                }
+            }
+            dependencies[Id] = true;
         } catch (Exception e) {
             System.out.println("Exception while parsing file:" + e);
         }
@@ -104,12 +152,12 @@ public class Process {
         };
     }
 
-    private SignalHandler GetUsr1Handler() {
+    private SignalHandler GetUsr2Handler() {
 
         return sig -> {
             System.out.println("USR2");
             for (int i = 1; i <= amountMessageToSend; i++) {
-                FIFOBroadcast.getInst().Broadcast(i);
+                LocalCausalBroadcast.getInst().Broadcast(i);
             }
         };
     }

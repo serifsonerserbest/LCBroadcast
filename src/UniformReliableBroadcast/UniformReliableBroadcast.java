@@ -10,72 +10,119 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class UniformReliableBroadcast {
 
     private BestEffortBroadcast bestEffortBroadcast;
+    private static volatile UniformReliableBroadcast uniformReliableBroadcast = new UniformReliableBroadcast();
 
-    private HashMap<MessageModel, Integer> ack;
-    private HashSet<MessageModel> delivered;
-    private HashSet<MessageModel> forward;
+    private volatile ConcurrentHashMap<MessageModel, AtomicInteger> ack;
+    private volatile ConcurrentHashMap<MessageModel, AtomicInteger> delivered;
+    private volatile ConcurrentHashMap<MessageModel, AtomicInteger> forward;
 
-    public UniformReliableBroadcast() {
+    private UniformReliableBroadcast() {
 
-        bestEffortBroadcast = new BestEffortBroadcast();
-        ack = new HashMap<>();
-        delivered = new HashSet<>();
-        forward = new HashSet<>();
+        bestEffortBroadcast = BestEffortBroadcast.getInst();
+        ack = new ConcurrentHashMap<>();
+        delivered = new ConcurrentHashMap<>();
+        forward = new ConcurrentHashMap<>();
 
     }
+    public static UniformReliableBroadcast getInst() {
+        return uniformReliableBroadcast;
+    }
 
-    public synchronized void Broadcast(int content) {
+    public void Broadcast(int content) {
 
         int messageId = SendEvent.NextId();
         int processId = Process.getInstance().Id;
         MessageModel message = new MessageModel(messageId, processId);
-        forward.add(message);
+        forward.put(message, new AtomicInteger(1));
 
         bestEffortBroadcast.Broadcast(content, processId, messageId, ProtocolTypeEnum.UniformReliableBroadcast, messageId);
     }
 
     //for FIFOBroadcast
-    public synchronized void Broadcast(int content, int fifoId) {
+    public void Broadcast(int content, int fifoId) {
 
         int messageId = SendEvent.NextId();
         int processId = Process.getInstance().Id;
         MessageModel message = new MessageModel(messageId, processId);
-        forward.add(message);
+        forward.put(message, new AtomicInteger(1));
         bestEffortBroadcast.Broadcast(content, processId, messageId, ProtocolTypeEnum.FIFOBroadcast, messageId, fifoId);
     }
 
-    public synchronized boolean Deliver(MessageModel message, MessageModel originalMessage, int content, int portReceived, InetAddress addressReceived, int fifoId) throws IOException {
+    //for LocalCausalBroadcast
+    public void Broadcast(int content, int[] vectorClock) {
+
+        int messageId = SendEvent.NextId();
+        int processId = Process.getInstance().Id;
+        MessageModel message = new MessageModel(messageId, processId);
+        forward.put(message, new AtomicInteger(1));
+        bestEffortBroadcast.Broadcast(content, processId, messageId, ProtocolTypeEnum.LocalCausalBroadcast, messageId, vectorClock);
+    }
+
+    public boolean Deliver(MessageModel message, MessageModel originalMessage, int content, int portReceived, InetAddress addressReceived, int fifoId) throws IOException {
 
         boolean deliver = false;
         if (bestEffortBroadcast.Deliver(message, content, portReceived, addressReceived)) {
-            int count = ack.getOrDefault(originalMessage, 0);
-            ack.put(originalMessage, count + 1);
 
-            if (!forward.contains(originalMessage)) {
-                forward.add(originalMessage);
+            //int count = ack.getOrDefault(originalMessage, 0);
+            ack.computeIfAbsent(originalMessage, x ->  new AtomicInteger(0));
+            ack.computeIfPresent(originalMessage, (key, value) -> value).incrementAndGet();
+
+            if (!forward.containsKey(originalMessage)) {
+                forward.put(originalMessage, new AtomicInteger(1));
                 int id = SendEvent.NextId();
                 bestEffortBroadcast.Broadcast(content, originalMessage.getProcessId(), originalMessage.getMessageId(),
                         ProtocolTypeEnum.FIFOBroadcast, id, fifoId);
             }
         }
-        if (forward.contains(originalMessage)) {
-            if (canDeliver(originalMessage) && !delivered.contains(originalMessage)) {
-                delivered.add(originalMessage);
+        if (forward.containsKey(originalMessage)) {
+            if (canDeliver(originalMessage) && !delivered.containsKey(originalMessage)) {
+                delivered.put(originalMessage, new AtomicInteger(1));
                 deliver = true;
             }
         }
         return deliver;
     }
 
-    public synchronized boolean canDeliver(MessageModel originalMessage) {
+
+    /* For Local Causal Deliver */
+    public boolean Deliver(MessageModel message, MessageModel originalMessage, int content, int portReceived, InetAddress addressReceived, int[] vectorClock) throws IOException {
+
+        boolean deliver = false;
+        if (bestEffortBroadcast.Deliver(message, content, portReceived, addressReceived)) {
+            ack.computeIfAbsent(originalMessage, x ->  new AtomicInteger(0));
+            ack.computeIfPresent(originalMessage, (key, value) -> value).incrementAndGet();
+
+            if (!forward.containsKey(originalMessage)) {
+                forward.put(originalMessage, new AtomicInteger(1));
+                int id = SendEvent.NextId();
+                bestEffortBroadcast.Broadcast(content, originalMessage.getProcessId(), originalMessage.getMessageId(),
+                        ProtocolTypeEnum.LocalCausalBroadcast, id, vectorClock);
+            }
+        }
+        if (forward.containsKey(originalMessage)) {
+            if (canDeliver(originalMessage) && !delivered.containsKey(originalMessage)) {
+                delivered.put(originalMessage, new AtomicInteger(1));
+                deliver = true;
+            }
+        }
+        return deliver;
+    }
+
+
+    public boolean canDeliver(MessageModel originalMessage) {
 
         int numOfProc = Process.getInstance().processes.size();
-        int count = ack.getOrDefault(originalMessage, 0);
-        return count > numOfProc / 2;
+        AtomicInteger count = ack.getOrDefault(originalMessage, new AtomicInteger(0));
+        //System.out.println(count + " " + numOfProc);
+        //System.out.println(count.get() > numOfProc / 2);
+
+        return count.get() > numOfProc / 2;
     }
 }

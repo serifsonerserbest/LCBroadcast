@@ -6,7 +6,7 @@ import Process.Process;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 public class FIFOBroadcast {
@@ -15,18 +15,19 @@ public class FIFOBroadcast {
     private UniformReliableBroadcast uniformReliableBroadcast;
 
     int lsn;
-    HashMap<MessageModel, Integer> pending;
+    volatile ConcurrentHashMap<MessageModel, Integer> pending;
     int next[];
 
     private FIFOBroadcast() {
 
-        uniformReliableBroadcast = new UniformReliableBroadcast();
+        uniformReliableBroadcast = UniformReliableBroadcast.getInst();
         lsn = 0;
-        pending = new HashMap<>();
+        pending = new ConcurrentHashMap<>();
         int numberOfProcesses = Process.getInstance().processes.size();
         next = new int[numberOfProcesses + 1];
-        for (int i = 0; i <= numberOfProcesses; ++i)
+        for (int i = 0; i <= numberOfProcesses; ++i) {
             next[i] = 1;
+        }
     }
 
     public static FIFOBroadcast getInst() {
@@ -34,15 +35,15 @@ public class FIFOBroadcast {
         return fifoBroadcast;
     }
 
-    public synchronized void Broadcast(int content) {
+    public void Broadcast(int content) {
 
         lsn++;
-        //System.out.println("b " + lsn);
+        System.out.println("b " + lsn);
         uniformReliableBroadcast.Broadcast(content, lsn);
         Process.getInstance().Logger.WriteToLog("b " + lsn);
     }
 
-    public synchronized void Deliver(MessageModel message, MessageModel originalMessage, int content, int portReceived, InetAddress addressReceived, int fifoId) throws IOException {
+    public void Deliver(MessageModel message, MessageModel originalMessage, int content, int portReceived, InetAddress addressReceived, int fifoId) throws IOException {
 
         if (uniformReliableBroadcast.Deliver(message, originalMessage, content, portReceived, addressReceived, fifoId)) {
             int originalProcessId = originalMessage.getProcessId();
@@ -51,12 +52,14 @@ public class FIFOBroadcast {
             while (true) {
                 int nextId = next[originalProcessId];
                 MessageModel fifoKey = new MessageModel(nextId, originalProcessId);
-                if (pending.containsKey(fifoKey)) {
-                    pending.remove(fifoKey);
-                    //System.out.println("d " + originalMessage.getProcessId() + " " + next[originalProcessId]);
+                Integer removed = pending.remove(fifoKey);
+                if (removed != null) {
+                    System.out.println("d " + originalMessage.getProcessId() + " " + next[originalProcessId]);
                     Process.getInstance().Logger.WriteToLog("d " + originalMessage.getProcessId() + " " + next[originalProcessId]);
                     next[originalProcessId]++;
-                } else break;
+                } else {
+                    break;
+                }
             }
         }
     }
