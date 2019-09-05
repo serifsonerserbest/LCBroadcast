@@ -1,5 +1,13 @@
 # Localized Causal Broadcast for Decentralized Payment System
 
+## Team Members
+
+* Şerif Soner Serbest: serif.serbest@epfl.ch
+* Pavlo Karalupov - pavlo.karalupov@epfl.ch
+* Mammad Hajili - mammad.hajili@epfl.ch
+
+## Project Description
+
 This project is a part of the the 'Distributed Algorithms' course at Swiss Federal Institute of Technology Lausanne (EPFL). Detail about the course can be found [here](http://dcl.epfl.ch/site/education/da).
 
 The goal of this practical project is to implement the building blocks necessary
@@ -10,9 +18,3 @@ abstractions:
 - Uniform Reliable Broadcast
 - FIFO(First In First Out) Broadcast
 - Localized Causal Broadcast 
-
-Team Members:
-
-- Şerif Soner Serbest: serif.serbest@epfl.ch
-- Pavlo Karalupov - pavlo.karalupov@epfl.ch
-- Mammad Hajili - mammad.hajili@epfl.ch
