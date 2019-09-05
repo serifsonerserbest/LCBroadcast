@@ -2,7 +2,7 @@
 
 ## Team Members
 
-* Şerif Soner Serbest: serif.serbest@epfl.ch
+* Serif Soner Serbest: serif.serbest@epfl.ch
 * Pavlo Karalupov - pavlo.karalupov@epfl.ch
 * Mammad Hajili - mammad.hajili@epfl.ch
 
